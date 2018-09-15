@@ -1,0 +1,321 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+
+        body, html {
+            font-family: arial, sans-serif;
+            font-size: 8pt;
+			margin: 0;
+        }
+
+        #visualization {
+            box-sizing: border-box;
+            width: 100%;
+        }
+		
+		.vis-item.is_guarantee {
+            background-color: #a6caf0;
+        }
+		
+		.vis-item.not_is_guarantee {
+            background-color: #faebd7;
+        }	
+
+		.vis-item.empty {
+            background-color: #ffa500;
+        }	
+        
+		.vis-item.order {
+            background-color: #007700;
+        }
+
+		.vis-item.closed {
+            background-color: #dcdcdc;
+        }
+		
+		.vis-item.query {
+            background-color: #c6c600;
+        }		
+		
+        .vis-item.record_having_zn {
+            background-color: #007700;
+        }
+	    
+		.vis-item.not_is_guarantee_not_having_zn {
+            background-color: #ffff00;
+        }	
+		
+		.vis-item.not_assigned_empl {
+            background-color: #0064ff;
+        }	
+		
+		.vis-item.unselected {
+            background-color: #333333;
+			opacity:0.75;
+        }	
+
+		.vis-item.select_ref {
+            background-color: #CCCC00;
+        }	
+		
+		.vis-item.expected {
+            background-color: transparent;
+            border-style: dashed;
+            z-index: 1;
+        }		
+		
+		.vis-item.new_ref {
+            background-color: #CC0033;
+        }
+		
+		.vis-item.is_delivery {
+            background-color: #990099;
+        }		
+        
+		.progress-wrapper {
+            background: white;
+            width: 100%;
+            height: 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 60%;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            background: #63ed63;
+        }
+
+        .progress-label {
+            position: absolute;
+            z-index: 1;
+        }
+				
+    </style>
+    <script src="./libs/jquery.min.js"></script>
+    <script src="./libs/vis.js"></script>
+    <link href="./libs/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+    <body oncontextmenu="return false;">
+	<body>	
+        <div id="loading">loading...</div>
+        <div id="visualization"></div>
+        <script type="text/javascript">
+		
+			window.r_ref = '';
+
+            var items;
+			var items_unselected;
+			var items_garant;
+			
+			var items_test;
+			
+			var _items;
+			var items_test;
+			
+            var groups;
+            var timeline;
+            var container;
+			
+			var is_garant;
+						
+			var properties_select;
+			
+			var links;
+
+			is_garant = false;
+
+            container = document.getElementById('visualization');
+            timeline = new vis.Timeline(container, [], {});
+
+            function update() {
+
+				var editable;			
+				
+				editable = false;             
+				if (window.editable == '1') {
+                    editable = true
+                }				
+
+                $.ajax({
+                    url: 'http://'+window.external_log_record+'/get?d_ref='+window.d_ref+'&date='+window.date+'&r_ref='+window.r_ref,
+
+                    success: function (data) {
+                        document.getElementById('loading').style.display = 'none';
+                        data_json = JSON.parse(data)
+						
+						if (data_json.length==0){
+							timeline.setItems([]);
+							timeline.setGroups([]);
+							return
+						}
+
+                        groups = data_json.timeline.groups;
+						
+						var _groups = new vis.DataSet();
+						
+						_groups.add(groups);
+						
+						
+						_items = data_json.timeline.items;
+                        items = new vis.DataSet(_items);	
+
+						items_test = new vis.DataSet(_items);
+						
+						items_unselected = new vis.DataSet(data_json.timeline.items_unselected);
+						items_garant = new vis.DataSet(data_json.timeline.items_garant);
+
+						hiddenDates = data_json.timeline.hiddenDates;
+						
+						links = data_json.timeline.links;  
+
+                        var options = {
+                            orientation: 'top',
+                            editable: editable,
+                            groupEditable: false,
+                            start: window.date.toDateFromDatetime(),
+                            end: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                            min: window.date.toDateFromDatetime(),
+                            max: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                            zoomMin: 1000 * 60 * 60 * 4,
+                            zoomMax: 1000 * 60 * 60 * 24 * 31 * 1,
+                            type: 'range',
+                            multiselect: false,
+                            hiddenDates: hiddenDates,
+                            showMajorLabels: false,
+							margin: { item: -1, axis: -1 },							
+							tooltip: {followMouse: true},
+							stack: false,
+							//autoResize: true,							
+							//timeAxis: {scale: 'minute', step: 20},
+							//tooltip: {followMouse: true, overflowMethod: 'cap'},
+                        };
+                        
+						timeline.setOptions(options);
+                        timeline.setItems(items);
+                        timeline.setGroups(_groups);
+
+            timeline.on('select', function (properties) 
+            {
+              thisItem = timeline.itemsData._data[properties.items];
+              if (!thisItem || (thisItem && (!thisItem['className'] || (thisItem['className'] && thisItem['className'] != 'expected')))) //exit on expected
+              {
+                setTimeout(setSelection, 500, properties);
+              }
+            });
+                       
+ 					    timeline.on('doubleClick', function (properties) {
+
+							logEvent('doubleClick', properties);
+
+                        });
+						
+						items.on('*', function (event, properties) {
+
+							item = timeline.itemsData._data[properties.items];
+							
+							logEvent(event, item);
+							
+						});
+                    },
+                    error: function (err) {
+                        console.log('Error', err);
+                        if (err.status === 0) {
+                            alert('Ошибка загрузки данных');
+                        }
+                        else {
+                            alert('Ошибка загрузки данных');
+                        }
+                    }
+                });
+            }
+						
+			function setSelection(properties){
+			
+				logEvent('select', properties);
+				
+				if (window.r_ref!=''){
+				return;
+				}
+				
+				var _items = properties.items;
+				
+				if (_items.length==0){
+					timeline.setItems(items);
+					return;
+				}
+
+				var now = new Date().getTime();
+				
+				timeline.setItems(items_unselected);
+				
+				while(new Date().getTime() < now + 250){ 
+				/* do nothing */ 
+				}	
+
+								
+				var sels = [];
+				
+				var i_id = _items[0].slice(0,32);
+				
+				sels = links[i_id];
+
+				timeline.setSelection(sels);	
+			}
+			
+			async function update_client(){
+			
+				if (is_garant == '1') {
+					timeline.setItems(items_garant)}
+                else{
+					timeline.setItems(items)
+                }
+			}
+			
+            function stringifyObject(object) {
+                if (!object) return;
+                var replacer = function (key, value) {
+                    if (value && value.tagName) {
+                        return "DOM Element";
+                    } else {
+                        return value;
+                    }
+                }
+                return JSON.stringify(object, replacer)
+            }
+
+            async function logEvent(event, properties) {
+
+                window.postComMessage('event=' + JSON.stringify(event) + ', ' +
+                    'properties=' + stringifyObject(properties))
+
+            }
+
+            String.prototype.toDateFromDatetime = function () {
+                var parts = this.split(/[. :]/);
+                return new Date(parts[2], parts[1] - 1, parts[0], parts[3], parts[4], parts[5]);
+            }
+			
+			function add_test_item() {
+			
+				items_test.add(var_item);				
+
+				timeline.setItems(items_test);
+
+			}
+			
+			function del_test_item() {
+
+				timeline.setItems(items);
+				
+				items_test = new vis.DataSet(_items);
+				
+			}
+        </script>
+    </body>
+</html>
