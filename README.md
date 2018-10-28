@@ -5,6 +5,8 @@
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/4.PNG)
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/5.PNG)
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/6.PNG)
+![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/7.PNG)
+![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/8.PNG)
 
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20180923-084308.gif)
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20180923-084342.gif)
