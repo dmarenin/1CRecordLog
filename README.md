@@ -20,3 +20,6 @@
 
 
 https://infostart.ru/public/894080/
+
+for start
+python3.6 start.py -port 2032 -ip 192.168.789.123 -sql_host 192.168.789.456 -sql_base db -sql_user sa -sql_pass my_pass
