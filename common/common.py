@@ -1,4 +1,4 @@
-# coding:utf8
+# coding:utf-8
 from datetime import datetime, date
 import base64
 import re
@@ -7,17 +7,20 @@ import argparse
 
 import decimal
 
+from common.consts import *
+
 datetime_format = "%Y-%m-%dT%H:%M:%S"
 datetime_format_regex = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$')
 
 def createParser ():
     parser = argparse.ArgumentParser()
-    parser.add_argument ('-ip', '--ip', default='')
-    parser.add_argument ('-port', '--port', default='2032')
-    parser.add_argument ('-sql_host', '--sql_host', default='')
-    parser.add_argument ('-sql_base', '--sql_base', default='')
-    parser.add_argument ('-sql_user', '--sql_user', default='sa')
-    parser.add_argument ('-sql_pass', '--sql_pass', default='*')
+    parser.add_argument ('-ip', '--ip', default=IP_DEFAULT)
+    parser.add_argument ('-port', '--port', default=PORT_DEFAULT)
+    parser.add_argument ('-sql_host', '--sql_host', default=SQL_HOST_DEFAULT)
+    parser.add_argument ('-sql_base', '--sql_base', default=SQL_BASE_DEFAULT)
+    parser.add_argument ('-sql_user', '--sql_user', default=SQL_USER_DEFAULT)
+    parser.add_argument ('-sql_pass', '--sql_pass', default=SQL_PASS_DEFAULT)
+    parser.add_argument ('-sql_base_ex_w_h', '--sql_base_ex_w_h', default=SQL_BASE_EX_W_H_DEFAULT)
  
     return parser
 
