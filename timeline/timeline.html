@@ -2,82 +2,83 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
     <style>
 
         body, html {
             font-family: arial, sans-serif;
             font-size: 8pt;
-			margin: 0;
+            margin: 0;
         }
 
         #visualization {
             box-sizing: border-box;
             width: 100%;
         }
-		
-		.vis-item.is_guarantee {
+
+        .vis-item.is_guarantee {
             background-color: #a6caf0;
         }
-		
-		.vis-item.not_is_guarantee {
-            background-color: #faebd7;
-        }	
 
-		.vis-item.empty {
+        .vis-item.not_is_guarantee {
+            background-color: #faebd7;
+        }
+
+        .vis-item.empty {
             background-color: #ffa500;
-        }	
-        
-		.vis-item.order {
+        }
+
+        .vis-item.order {
             background-color: #007700;
         }
 
-		.vis-item.closed {
+        .vis-item.closed {
             background-color: #dcdcdc;
         }
-		
-		.vis-item.query {
+
+        .vis-item.query {
             background-color: #c6c600;
-        }		
-		
+        }
+
         .vis-item.record_having_zn {
             background-color: #007700;
         }
-	    
-		.vis-item.not_is_guarantee_not_having_zn {
-            background-color: #ffff00;
-        }	
-		
-		.vis-item.not_assigned_empl {
-            background-color: #0064ff;
-        }	
-		
-		.vis-item.unselected {
-            background-color: #333333;
-			opacity:0.75;
-        }	
 
-		.vis-item.select_ref {
+        .vis-item.not_is_guarantee_not_having_zn {
+            background-color: #ffff00;
+        }
+
+        .vis-item.not_assigned_empl {
+            background-color: #0064ff;
+        }
+
+        .vis-item.unselected {
+            background-color: #333333;
+            opacity: 0.75;
+        }
+
+        .vis-item.select_ref {
             background-color: #CCCC00;
-        }	
-		
-		.vis-item.expected {
+        }
+
+        .vis-item.expected {
             background-color: transparent;
             border-style: dashed;
             z-index: 1;
-        }		
-		
-		.vis-item.new_ref {
+        }
+
+        .vis-item.new_ref {
             background-color: #CC0033;
         }
-		
-		.vis-item.is_delivery {
+
+        .vis-item.is_delivery {
             background-color: #990099;
-        }		
-        
-		.progress-wrapper {
+        }
+
+        .progress-wrapper {
             background: white;
-            width: 100%;
-            height: 18px;
+            width: 180px;
+            height: 10px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -92,230 +93,523 @@
             background: #63ed63;
         }
 
+        .progress2 {
+            height: 100%;
+            width: 60%;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            background: #CCCC00;
+        }
+
+        .progress3 {
+            height: 100%;
+            width: 60%;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            background: #CC0033;
+        }
+
         .progress-label {
+            color: #4d4d4d;
             position: absolute;
             z-index: 1;
+            margin-top: -1px;
         }
-				
+
+        li.item {
+            list-style: none;
+            width: 210px;
+            height: 23px;
+            color: #1A1A1A;
+            background-color: #D5DDF6;
+            border: 1px solid #97B0F8;
+            border-radius: 2px;
+            margin-bottom: -5px;
+            padding: 5px 12px;
+			overflow:hidden;
+        }
+
+        li.item:before {
+            content: "≣";
+            font-family: Arial, sans-serif;
+            display: inline-block;
+            font-size: inherit;
+            cursor: move;
+        }
+			
+	    li.item:hover {
+            border-color: darkred;
+        }
+
+        li.object-item {
+            list-style: none;
+            width: 150px;
+            color: #1A1A1A;
+            background-color: #D5DDF6;
+            border: 1px solid #97B0F8;
+            border-radius: 2px;
+            margin-bottom: -5px;
+            padding: 5px 12px;
+        }
+
+            li.object-item:before {
+                content: "≣";
+                font-family: Arial, sans-serif;
+                display: inline-block;
+                font-size: inherit;
+                cursor: move;
+            }
+
+        .items-panel {
+        }
+        
+        .resize-drag {
+          width: 300px;
+          height: 100px;
+
+          /* This makes things *much* easier */
+          box-sizing: border-box;
+          
+          position:relative;
+          z-index:10;
+          padding:10px;
+        }
+
+        .resize-container {
+          display: inline-block;
+          z-index: 10; 
+          position: absolute;
+          left: 40%;
+          top: 20%;
+		  opacity: 0.8;
+		  overflow: hidden;
+		  border: 1px solid black;
+          background: #eee;
+        }
+		
+		.resize-container h3 {
+          background: yellowgreen;
+          margin: 0;
+          padding: 10px;
+        }
+        
+		.couponcode:hover .coupontooltip {
+          display: block;
+        }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+		
     </style>
+
     <script src="./libs/jquery.min.js"></script>
     <script src="./libs/vis.js"></script>
+    <script src="./libs/interact.js"></script>
+
     <link href="./libs/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+
+    <link href="./libs/tooltip.css" rel="stylesheet" type="text/css" />
+    <script src="./libs/tooltip.js" type="text/javascript"></script>
+
     <body oncontextmenu="return false;">
-	<body>	
-        <div id="loading">loading...</div>
-        <div id="visualization"></div>
-        <script type="text/javascript">
-		
-			window.r_ref = '';
+        <body>
+            <div id="loading">loading...</div>
+            <div id="visualization"></div>
+            
+            <div class="resize-container" id="works-wrap" style="display:none;">
+              <div class="resize-drag">
+              
+                <div class='items-panel' id="works">
+                    <div class='side'>
+                        <div class='items-panel'>
+                            <div class='side'>
+                                <h3>Не распределенные работы:</h3>
+                                <ul class="items"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+              </div>
+            </div>
+            
 
-            var items;
-			var items_unselected;
-			var items_garant;
-			
-			var items_test;
-			
-			var _items;
-			var items_test;
-			
-            var groups;
-            var timeline;
-            var container;
-			
-			var is_garant;
-						
-			var properties_select;
-			
-			var links;
+            <script type="text/javascript">
 
-			is_garant = false;
+                window.r_ref = '';
 
-            container = document.getElementById('visualization');
-            timeline = new vis.Timeline(container, [], {});
+                var items;
+                var items_unselected;
+                var items_garant;
 
-            function update() {
+                var items_test;
 
-				var editable;			
-				
-				editable = false;             
-				if (window.editable == '1') {
-                    editable = true
-                }				
+                var _items;
+                var items_test;
 
-                $.ajax({
-                    url: 'http://'+window.external_log_record+'/get?d_ref='+window.d_ref+'&date='+window.date+'&r_ref='+window.r_ref,
+                var groups;
+                var timeline;
+                var container;
 
-                    success: function (data) {
-                        document.getElementById('loading').style.display = 'none';
-                        data_json = JSON.parse(data)
-						
-						if (data_json.length==0){
-							timeline.setItems([]);
-							timeline.setGroups([]);
-							return
-						}
+                var is_garant;
 
-                        groups = data_json.timeline.groups;
-						
-						var _groups = new vis.DataSet();
-						
-						_groups.add(groups);
-						
-						
-						_items = data_json.timeline.items;
-                        items = new vis.DataSet(_items);	
+                var properties_select;
 
-						items_test = new vis.DataSet(_items);
-						
-						items_unselected = new vis.DataSet(data_json.timeline.items_unselected);
-						items_garant = new vis.DataSet(data_json.timeline.items_garant);
+                var links;
 
-						hiddenDates = data_json.timeline.hiddenDates;
-						
-						links = data_json.timeline.links;  
+                is_garant = false;
 
-                        var options = {
-                            orientation: 'top',
-                            editable: editable,
-                            groupEditable: false,
-                            start: window.date.toDateFromDatetime(),
-                            end: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
-                            min: window.date.toDateFromDatetime(),
-                            max: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
-                            zoomMin: 1000 * 60 * 60 * 4,
-                            zoomMax: 1000 * 60 * 60 * 24 * 31 * 1,
-                            type: 'range',
-                            multiselect: false,
-                            hiddenDates: hiddenDates,
-                            showMajorLabels: false,
-							margin: { item: -1, axis: -1 },							
-							tooltip: {followMouse: true},
-							stack: false,
-							//autoResize: true,							
-							//timeAxis: {scale: 'minute', step: 20},
-							//tooltip: {followMouse: true, overflowMethod: 'cap'},
-                        };
-                        
-						timeline.setOptions(options);
+                container = document.getElementById('visualization');
+                timeline = new vis.Timeline(container, [], {});
+
+                function update() {
+
+                    var editable;
+
+                    editable = false;
+                    if (window.editable == '1') {
+                        editable = true
+                    }
+
+                    $.ajax({
+                        url: 'http://' + window.external_log_record + '/get?d_ref=' + window.d_ref + '&date=' + window.date + '&r_ref=' + window.r_ref,
+
+                        success: function (data) {
+                            document.getElementById('loading').style.display = 'none';
+                            data_json = JSON.parse(data)
+
+                            if (data_json.length == 0) {
+                                timeline.setItems([]);
+                                timeline.setGroups([]);
+                                return
+                            }
+
+                            groups = data_json.timeline.groups;
+
+                            var _groups = new vis.DataSet();
+
+                            _groups.add(groups);
+
+                            _items = data_json.timeline.items;
+                            items = new vis.DataSet(_items);
+
+                            items_test = new vis.DataSet(_items);
+
+                            items_unselected = new vis.DataSet(data_json.timeline.items_unselected);
+                            items_garant = new vis.DataSet(data_json.timeline.items_garant);
+
+                            hiddenDates = data_json.timeline.hiddenDates;
+
+                            links = data_json.timeline.links;
+
+                            var options = {
+                                orientation: 'top',
+                                editable: editable,
+                                groupEditable: false,
+                                start: window.date.toDateFromDatetime(),
+                                end: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                                min: window.date.toDateFromDatetime(),
+                                max: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                                zoomMin: 1000 * 60 * 60 * 4,
+                                zoomMax: 1000 * 60 * 60 * 24 * 31 * 1,
+                                type: 'range',
+                                multiselect: false,
+                                hiddenDates: hiddenDates,
+                                showMajorLabels: false,
+                                margin: { item: -1, axis: -1 },
+                                tooltip: { followMouse: true, overflowMethod: 'cap' },
+                                stack: false,
+                                //autoResize: true,
+                                //timeAxis: {scale: 'minute', step: 20},
+                                //tooltip: {followMouse: true, overflowMethod: 'cap'},
+                            };
+
+                            timeline.setOptions(options);
+                            timeline.setItems(items);
+                            timeline.setGroups(_groups);
+
+                            document.getElementById('works-wrap').style.display = 'none';
+
+                            works = data_json.timeline.works;
+                            if (works != undefined) {
+                                document.getElementById('works-wrap').style.display = 'block';
+                                $("div.items-panel ul.items").empty();
+
+                                for (var i in works) {
+                                    $("div.items-panel ul.items").append(
+									
+									'<li draggable="true" class="item tooltip" onmouseover="tooltip.pop(this, \''+works[i]['name']+'\')">' + works[i]['name'] + 									
+									'<span class="items-work-service" style="display:none;">' + works[i]['service'] + '</span>' +
+									'<span class="items-work-ref" style="display:none;">' + works[i]['ref'] + '</span>' +
+									'<span class="items-work-num-str" style="display:none;">' + works[i]['num_str'] + '</span>' +
+									'<span class="items-work-amount" style="display:none;">' + works[i]['amount'] + '</span>' +
+									//'<span class="tooltiptext">' + works[i]['name'] + '</span>'+
+									
+									
+									//'<span class="tooltip" onmouseover="tooltip.pop(this, \'<h3>Lorem //ipsum</h3>Lorem ipsum dolor sit amet, consectetur adipiscing elit. //Vestibulum in consequat neque, eget tempor ipsum.\')">Hover me</span>' +
+									'</li>'
+									
+									);
+
+                                }
+
+                                var work_items = document.querySelectorAll('.items .item');
+
+                                for (var i = work_items.length - 1; i >= 0; i--) {
+                                    var work_item = work_items[i];
+                                    work_item.addEventListener('dragstart', handleDragStart.bind(this), false);
+                                }
+                            }
+
+                            timeline.on('select', function (properties) {
+                                thisItem = timeline.itemsData._data[properties.items];
+                                if (!thisItem || (thisItem && (!thisItem['className'] || (thisItem['className'] && thisItem['className'] != 'expected' && thisItem['className'] != 'not_is_guarantee')))) //exit on expected
+                                {
+                                    setTimeout(setSelection, 500, properties);
+                                }
+                            });
+
+                            timeline.on('doubleClick', function (properties) {
+
+                                logEvent('doubleClick', properties);
+
+                            });
+
+                            items.on('*', function (event, properties) {
+
+                                item = timeline.itemsData._data[properties.items];
+
+                                logEvent(event, item);
+
+                            });
+                        },
+                        error: function (err) {
+                            console.log('Error', err);
+                            if (err.status === 0) {
+                                alert('Ошибка загрузки данных');
+                            }
+                            else {
+                                alert('Ошибка загрузки данных');
+                            }
+                        }
+                    });
+                }
+
+                function handleDragStart(event) {
+                    var dragSrcEl = event.target;
+
+					ones_service_txt = $(event.target).find('.items-work-service').html()
+					ones_ref_txt = $(event.target).find('.items-work-ref').html()
+					ones_num_str_txt = $(event.target).find('.items-work-num-str').html()
+					ones_amount_txt = $(event.target).find('.items-work-amount').html()
+					
+                    event.dataTransfer.effectAllowed = 'move';
+                    var itemType = "range";
+                    var item = {
+                        id: new Date(),
+                        type: itemType,
+                        content: event.target.innerHTML.trim(),
+						title: {ones_service: ones_service_txt, ones_ref: ones_ref_txt, ones_num_str: ones_num_str_txt, event: 'distr_service', ones_amount: ones_amount_txt}
+                    };
+
+                    //var isFixedTimes = (event.target.innerHTML.split('-')[2] && event.target.innerHTML.split('-')[2].trim() == 'fixed times')
+                    //if (isFixedTimes) {
+                    //    item.start = new Date();
+                    //    item.end = new Date(1000 * 60 * 10 + (new Date()).valueOf());
+                    //}
+                    event.dataTransfer.setData("text", JSON.stringify(item));
+                }
+
+                function setSelection(properties) {
+
+                    logEvent('select', properties);
+
+                    if (window.r_ref != '') {
+                        return;
+                    }
+
+                    var _items = properties.items;
+
+                    if (_items.length == 0) {
                         timeline.setItems(items);
-                        timeline.setGroups(_groups);
+                        return;
+                    }
 
-            timeline.on('select', function (properties) 
-            {
-              thisItem = timeline.itemsData._data[properties.items];
-              if (!thisItem || (thisItem && (!thisItem['className'] || (thisItem['className'] && thisItem['className'] != 'expected')))) //exit on expected
-              {
-                setTimeout(setSelection, 500, properties);
-              }
-            });
-                       
- 					    timeline.on('doubleClick', function (properties) {
+                    var now = new Date().getTime();
 
-							logEvent('doubleClick', properties);
+                    timeline.setItems(items_unselected);
 
-                        });
-						
-						items.on('*', function (event, properties) {
+                    while (new Date().getTime() < now + 250) {
+                        /* do nothing */
+                    }
 
-							item = timeline.itemsData._data[properties.items];
-							
-							logEvent(event, item);
-							
-						});
-                    },
-                    error: function (err) {
-                        console.log('Error', err);
-                        if (err.status === 0) {
-                            alert('Ошибка загрузки данных');
-                        }
-                        else {
-                            alert('Ошибка загрузки данных');
+                    var sels = [];
+
+                    var i_id = _items[0].slice(0, 32);
+
+                    sels = links[i_id];
+
+                    timeline.setSelection(sels);
+                }
+
+                async function update_client() {
+
+                    if (is_garant == '1') {
+                        timeline.setItems(items_garant)
+                    }
+                    else {
+                        timeline.setItems(items)
+                    }
+                }
+
+                function stringifyObject(object) {
+                    if (!object) return;
+                    var replacer = function (key, value) {
+                        if (value && value.tagName) {
+                            return "DOM Element";
+                        } else {
+                            return value;
                         }
                     }
+                    return JSON.stringify(object, replacer)
+                }
+
+                async function logEvent(event, properties) {
+
+                    window.postComMessage('event=' + JSON.stringify(event) + ', ' +
+                        'properties=' + stringifyObject(properties))
+
+                }
+
+                String.prototype.toDateFromDatetime = function () {
+                    var parts = this.split(/[. :]/);
+                    return new Date(parts[2], parts[1] - 1, parts[0], parts[3], parts[4], parts[5]);
+                }
+
+                function add_test_item() {
+
+                    items_test.add(var_item);
+
+                    timeline.setItems(items_test);
+
+                }
+
+                function del_test_item() {
+
+                    timeline.setItems(items);
+
+                    items_test = new vis.DataSet(_items);
+
+                }
+
+
+                /* DRAGGABLE WINDOW */
+
+                function dragMoveListener (event) {
+                  var target = event.target,
+                      // keep the dragged position in the data-x/data-y attributes
+                      x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+                      y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                  // translate the element
+                  target.style.webkitTransform =
+                  target.style.transform =
+                    'translate(' + x + 'px, ' + y + 'px)';
+
+                  // update the posiion attributes
+                  target.setAttribute('data-x', x);
+                  target.setAttribute('data-y', y);
+                }
+
+                // this is used later in the resizing and gesture demos
+                window.dragMoveListener = dragMoveListener;
+
+              interact('.resize-container')
+                .draggable({
+                  allowFrom: '.resize-drag h3',
+                  onmove: window.dragMoveListener,
+                  restrict: {
+                    //restriction: 'parent',
+                    elementRect: { top: 1, left: 0, bottom: 0, right: 1 }
+                  },
+                })
+                .resizable({
+                  // resize from all edges and corners
+                  edges: { left: true, right: true, bottom: true, top: true },
+
+                  // keep the edges inside the parent
+                  restrictEdges: {
+                    outer: 'parent',
+                    endOnly: true,
+                  },
+
+                  // minimum size
+                  restrictSize: {
+                    min: { width: 200, height: 100 },
+                  },
+
+                  inertia: true,
+                })
+                .on('resizemove', function (event) {
+                  var target = event.target,
+                      x = (parseFloat(target.getAttribute('data-x')) || 0),
+                      y = (parseFloat(target.getAttribute('data-y')) || 0);
+
+                  // update the element's style
+                  target.style.width  = event.rect.width + 'px';
+                  target.style.height = event.rect.height + 'px';
+
+                  // translate when resizing from top or left edges
+                  x += event.deltaRect.left;
+                  y += event.deltaRect.top;
+
+                  target.style.webkitTransform = target.style.transform =
+                      'translate(' + x + 'px,' + y + 'px)';
+
+                  target.setAttribute('data-x', x);
+                  target.setAttribute('data-y', y);
+                  //target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height);
                 });
-            }
-						
-			function setSelection(properties){
-			
-				logEvent('select', properties);
-				
-				if (window.r_ref!=''){
-				return;
-				}
-				
-				var _items = properties.items;
-				
-				if (_items.length==0){
-					timeline.setItems(items);
-					return;
-				}
 
-				var now = new Date().getTime();
-				
-				timeline.setItems(items_unselected);
-				
-				while(new Date().getTime() < now + 250){ 
-				/* do nothing */ 
-				}	
 
-								
-				var sels = [];
-				
-				var i_id = _items[0].slice(0,32);
-				
-				sels = links[i_id];
-
-				timeline.setSelection(sels);	
-			}
-			
-			async function update_client(){
-			
-				if (is_garant == '1') {
-					timeline.setItems(items_garant)}
-                else{
-					timeline.setItems(items)
-                }
-			}
-			
-            function stringifyObject(object) {
-                if (!object) return;
-                var replacer = function (key, value) {
-                    if (value && value.tagName) {
-                        return "DOM Element";
-                    } else {
-                        return value;
-                    }
-                }
-                return JSON.stringify(object, replacer)
-            }
-
-            async function logEvent(event, properties) {
-
-                window.postComMessage('event=' + JSON.stringify(event) + ', ' +
-                    'properties=' + stringifyObject(properties))
-
-            }
-
-            String.prototype.toDateFromDatetime = function () {
-                var parts = this.split(/[. :]/);
-                return new Date(parts[2], parts[1] - 1, parts[0], parts[3], parts[4], parts[5]);
-            }
-			
-			function add_test_item() {
-			
-				items_test.add(var_item);				
-
-				timeline.setItems(items_test);
-
-			}
-			
-			function del_test_item() {
-
-				timeline.setItems(items);
-				
-				items_test = new vis.DataSet(_items);
-				
-			}
-        </script>
-    </body>
+            </script>
+        </body>
 </html>

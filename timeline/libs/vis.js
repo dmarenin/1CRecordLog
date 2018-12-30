@@ -19471,7 +19471,8 @@ ItemSet.prototype._onMouseMove = function (event) {
     if (this.popup) {
       if (!this.popup.hidden) {
         var container = this.body.dom.centerContainer;
-        this.popup.setPosition(event.clientX - util.getAbsoluteLeft(container) + container.offsetLeft, event.clientY - util.getAbsoluteTop(container) + container.offsetTop);
+        //this.popup.setPosition(event.clientX - util.getAbsoluteLeft(container) + container.offsetLeft, event.clientY - util.getAbsoluteTop(container) + container.offsetTop);
+		this.popup.setPosition(event.clientX - util.getAbsoluteLeft(container) + container.offsetLeft, event.clientY);
         this.popup.show(); // Redraw
       }
     }
@@ -19560,7 +19561,7 @@ ItemSet.prototype._onAddItem = function (event) {
     newItemData[this.itemsData._fieldId] = newItemData.id || util.randomUUID();
 
     if (newItemData.type == 'range' && !newItemData.end) {
-      end = this.body.util.toTime(x + this.props.width / 5);
+      end = this.body.util.toTime(x + this.props.width / 30);
       newItemData.end = snap ? snap(end, scale, step) : end;
     }
   } else {
@@ -19572,7 +19573,7 @@ ItemSet.prototype._onAddItem = function (event) {
 
     // when default type is a range, add a default end date to the new item
     if (this.options.type === 'range') {
-      end = this.body.util.toTime(x + this.props.width / 5);
+      end = this.body.util.toTime(x + this.props.width / 30);
       newItemData.end = snap ? snap(end, scale, step) : end;
     }
   }
