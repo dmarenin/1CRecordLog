@@ -15,6 +15,8 @@
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20180923-085921.gif)
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20180923-090010.gif)
 ![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20181103-093036.gif)
+![Image alt](https://github.com/dmarenin/1CRecordLog/blob/master/img/ice_video_20181230-081518.gif)
+
 
 
 https://infostart.ru/public/894080/
