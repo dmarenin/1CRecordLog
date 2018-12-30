@@ -43,7 +43,8 @@ class LogRecordKindWork(OnesEnum):
     name = ENameKey([
         "Прием",
         "Ремонт",
-        "Выдача"
+        "Выдача",
+        "Обрудование"
     ])
 
     class Meta:
@@ -371,6 +372,11 @@ class WorkshopEquipment(OnesRef):
     class Meta:
         db_table = 'r_ОборудованиеЦеха'       
 
+class Services(OnesRef):
+
+    class Meta:
+        db_table = 'r_Автоработы'
+
 # endregion
 
 class EventKinds(OnesEnum):
@@ -433,7 +439,6 @@ class RecordToLogRecord(OnesDoc):
     orderOutfit = ForeignKey(OrderOutfit, db_column='ЗаказНаряд', related_name='orderOutfit_DocRec')
     
     notCome = BoolField(db_column='НеПриехал')
-	
     author = ForeignKey(User, db_column='Автор')
     
     class Meta:
@@ -454,8 +459,9 @@ class RecordToLogRecord_Periods(OnesTable):
     kindWork = ForeignKey(LogRecordKindWork, db_column='ЖурналЗаписиВидРаботы')
     periodStart = DateField(db_column="ПериодНачало")
     periodEnd = DateField(db_column="ПериодОкончание")
-    employee = ForeignKey(Employee, db_column='Сотрудник')
+    employee = ForeignKey(Employee, db_column='Сотрудник_ссылка')
     num_str = peewee.DecimalField(db_column="НомерСтроки") 
+    key_periods_repair = peewee.CharField(db_column="КлючПериодаРемонта") 
 
     class Meta:
         db_table = 'd_ЗаписьВЖурналЗаписи_ПериодыРемонта'
@@ -505,6 +511,29 @@ class CRM_BuisnessProcessService(OnesRef):
     class Meta:
         db_table = 'p_CRM_БизнесПроцессСервиса'
 
+class ServiceRecord(OnesRef):
+    recordLR = ForeignKey(RecordToLogRecord, db_column='ДокументЗаписи')
+    completed = BoolField(db_column='Завершен')
+    started = BoolField(db_column='Стартован')
+
+    class Meta:
+        db_table = 'p_ЗаписьНаСервис'
+
+class ServiceRecord_Services(OnesTable):
+    link = ForeignKey(ServiceRecord, db_column='Ссылка')
+    service = ForeignKey(Services, db_column='Работа')
+    #work_hour = peewee.DecimalField(db_column="НормоЧас") 
+    #price = peewee.DecimalField(db_column="Цена") 
+    amount = peewee.DecimalField(db_column="Количество") 
+    work_hour = peewee.DecimalField(db_column="Коэффициент")
+    #summ = peewee.DecimalField(db_column="Сумма") 
+    #disc_summ = peewee.DecimalField(db_column="СуммаСкидки") 
+    #disc_per = peewee.DecimalField(db_column="ПроцентСкидки")
+    num_str = peewee.IntegerField(db_column='НомерСтроки')
+    key_periods_repair = peewee.CharField(db_column="КлючПериодаРемонта") 
+
+    class Meta:
+        db_table = 'p_ЗаписьНаСервис_Работы'
 
 # endregion
 
@@ -537,6 +566,7 @@ class CRM_BuisnessProcessService_PointRoute(OnesEnum):
 # endregion
 
 # region Задачи
+
 class CRM_TasksService(OnesTask):
     buisnessProcess = ForeignKey(CRM_BuisnessProcessService, db_column='БизнесПроцесс')
     pointRoute = ForeignKey(CRM_BuisnessProcessService_PointRoute, db_column='ТочкаМаршрута')
@@ -556,7 +586,6 @@ class CRM_TasksService(OnesTask):
 
     class Meta:
         db_table = 't_CRM_ЗадачиСервиса'
-
 
 # endregion
 
@@ -1337,6 +1366,8 @@ class CRM_ValidityStocksPeriod(OnesCore):
 
 class SettingsRecordLog(OnesCore):
     
+    reg = peewee.CharField(db_column="Регистратор")
+
     period = DateField(db_column="Период")
     char = ForeignKey(CharSettingRecordLog, db_column='Характеристика')
     dep = ForeignKey(Dep, db_column='Подразделение')
@@ -1360,26 +1391,18 @@ class SettingsRecordLog(OnesCore):
 
     @staticmethod
     def slice(**kwargs):
-        res = (SettingsRecordLog
-            .select(
-            SettingsRecordLog.char.alias('char'),
-            SettingsRecordLog.dep.alias('dep'),
-            SettingsRecordLog.num_day.alias('num_day'),
-            SettingsRecordLog.accept_proc.alias('accept_proc'),
-            SettingsRecordLog.accept_start.alias('accept_start'),
-            SettingsRecordLog.accept_end.alias('accept_end'),
-            
-            peewee.fn.MAX(SettingsRecordLog.period).alias('MAXPERIOD_'))
+        res = (SettingsRecordLog.select(peewee.fn.MAX(SettingsRecordLog.period).alias('MAXPERIOD_')))
+           
+        if kwargs.get('dep') is not None:
+            res = res.where((SettingsRecordLog.dep == kwargs.get('dep')))
+               
+        if kwargs.get('char') is not None:
+           res = res.where((SettingsRecordLog.char == kwargs.get('char')))
 
-            .group_by(
-             SettingsRecordLog.char,
-             SettingsRecordLog.dep,
-             SettingsRecordLog.num_day,
-             SettingsRecordLog.accept_proc,
-             SettingsRecordLog.accept_start,
-             SettingsRecordLog.accept_end
-        )
-            .alias("subquery"))
+        res_list = list(res.dicts())
+
+        if len(res_list) == 0:
+            return []
 
         res1 = (SettingsRecordLog
             .select(
@@ -1393,7 +1416,10 @@ class SettingsRecordLog(OnesCore):
 
             SettingsRecordLog.val_int.alias('val_int'),
             SettingsRecordLog.val_date.alias('val_date'),
-            SettingsRecordLog.val_str.alias('val_str')
+            SettingsRecordLog.val_str.alias('val_str'),
+            SettingsRecordLog.val_char.alias('val_char'),
+            SettingsRecordLog.period.alias('period'),
+            SettingsRecordLog.reg,
 
             #peewee.fn.MAX(SettingsRecordLog.num_day).alias('num_day'),
             #peewee.fn.MAX(SettingsRecordLog.accept_proc).alias('accept_proc'),
@@ -1404,19 +1430,22 @@ class SettingsRecordLog(OnesCore):
             #peewee.fn.MAX(SettingsRecordLog.val_date).alias('val_date'),
             #peewee.fn.MAX(SettingsRecordLog.val_str).alias('val_str')
 
-        ).distinct()
-            .join(res, join_type=peewee.JOIN.LEFT_OUTER, on=(
-                (SettingsRecordLog.char == res.c.char) &
-                (SettingsRecordLog.dep == res.c.dep) &
-                #(SettingsRecordLog.num_day == res.c.num_day) &
-                #(SettingsRecordLog.accept_proc == res.c.accept_proc) &
-                #(SettingsRecordLog.accept_start == res.c.accept_start) &
-                #(SettingsRecordLog.accept_end == res.c.accept_end) &
-                (SettingsRecordLog.period == res.c.MAXPERIOD_)))
+        ).distinct().where(SettingsRecordLog.period == res_list[0]['MAXPERIOD_']))
+            #.join(res, on=(
+            #    #(SettingsRecordLog.char == res.c.char) &
+            #    #(SettingsRecordLog.dep == res.c.dep) &
+            #    #(SettingsRecordLog.reg == res.c.reg) &
+            #    #(SettingsRecordLog.val_char == res.c.val_char) &
+            #    #(SettingsRecordLog.num_day == res.c.num_day) &
+            #    #(SettingsRecordLog.accept_proc == res.c.accept_proc) &
+            #    #(SettingsRecordLog.accept_start == res.c.accept_start) &
+            #    #(SettingsRecordLog.accept_end == res.c.accept_end) &
+            #    #(SettingsRecordLog.val_char == res.c.val_char) &
+            #    (SettingsRecordLog.period == res_list[0]['MAXPERIOD_'])))
 
-            #.group_by(SettingsRecordLog.char,
-            #          SettingsRecordLog.dep)
-        )
+            ##.group_by(SettingsRecordLog.char,
+            ##          SettingsRecordLog.dep)
+        
 
         if kwargs.get('dep') is not None:
             res1 = res1.where((SettingsRecordLog.dep == kwargs.get('dep')))
