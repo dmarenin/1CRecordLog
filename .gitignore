@@ -1,10 +1,8 @@
-
-WebKitXCEF3.ocx.bak
 *.pyc
 *.bak
-*.sln
-*.pyproj
-.vs/ExternalRecordLog/v15/.suo
-*.orig
-libs/WebKitX_CEF3_ActiveX_1.5.11.3220.exe
-libs/WebKitXCEF3.ocx_bak
+
+ExternalRecordLog/requirements.txt
+ExternalRecordLog/server/conf.py
+etc/libs/WebKitXCEF3.ocx
+etc/libs/WebKitXCEF3.ocx_bak
+etc/old/requirements.txt
