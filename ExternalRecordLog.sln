@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "WSServer", "WSServer\WSServer.pyproj", "{1A663642-5FDA-40E4-B321-4D071BC04BD9}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ExternalRecordLog", "ExternalRecordLog\ExternalRecordLog.pyproj", "{81638705-BEF0-44E0-8534-E3BFC6748F81}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A663642-5FDA-40E4-B321-4D071BC04BD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A663642-5FDA-40E4-B321-4D071BC04BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81638705-BEF0-44E0-8534-E3BFC6748F81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81638705-BEF0-44E0-8534-E3BFC6748F81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {00219196-BB69-4F65-BBF4-DBD8B1332991}
+	EndGlobalSection
+	GlobalSection(MercurialSourceControlSolutionProperties) = preSolution
+		SolutionIsControlled = True
+		SolutionBindings = <Solution Location In Database>
+	EndGlobalSection
+EndGlobal

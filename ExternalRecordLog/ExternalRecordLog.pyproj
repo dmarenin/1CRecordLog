@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{81638705-bef0-44e0-8534-e3bfc6748f81}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>runserver.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|PythonCore|3.6-32</InterpreterId>
+    <CommandLineArguments>-port 2039 -ip 192.168.7.220 -sql_host iits -sql_base aa_test1 -sql_user sa -sql_pass Aa123456</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <SccProjectName>&lt;Project Location In Database&gt;</SccProjectName>
+    <SccProvider>Mercurial Source Control Package</SccProvider>
+    <SccAuxPath>&lt;Source Control Database&gt;</SccAuxPath>
+    <SccLocalPath>&lt;Local Binding Root of Project&gt;</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="server\consts.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="orm\base.py" />
+    <Compile Include="orm\fields.py" />
+    <Compile Include="orm\models.py" />
+    <Compile Include="runserver.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="server\conf.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="server\updater.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="server\res_to_vis_js.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="server\views.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="server\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="orm\" />
+    <Folder Include="server\" />
+    <Folder Include="server\static\css\" />
+    <Folder Include="server\templates\" />
+    <Folder Include="server\static\content\" />
+    <Folder Include="server\static\scripts\" />
+    <Folder Include="server\static\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6-32" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="requirements.txt" />
+    <Content Include="server\static\content\load.gif" />
+    <Content Include="server\static\content\refrash.png" />
+    <Content Include="server\static\css\pikaday.css" />
+    <Content Include="server\static\css\timeline.css" />
+    <Content Include="server\static\css\tooltip.css" />
+    <Content Include="server\static\css\vis-timeline-graph2d.min.css" />
+    <Content Include="server\static\scripts\interact.js" />
+    <Content Include="server\static\scripts\jquery.min.js" />
+    <Content Include="server\static\scripts\moment.js" />
+    <Content Include="server\static\scripts\pikaday.js" />
+    <Content Include="server\static\scripts\timeline.js" />
+    <Content Include="server\static\scripts\tooltip.js" />
+    <Content Include="server\static\scripts\vis.js" />
+    <Content Include="server\templates\index.html" />
+    <Content Include="server\templates\timeline.html" />
+    <Content Include="server\templates\timeline1.html" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
