@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style>
+    body, html {
+      font-family: arial, sans-serif;
+      font-size: 11pt;
+    }
+
+    #visualization {
+      box-sizing: border-box;
+      width: 100%;
+      height: 300px;
+    }
+    
+    .vis-item.openwheel  { background-color: #B0E2FF; }
+    .vis-item.rally      { background-color: #EAEAEA; }
+    .vis-item.motorcycle { background-color: #FA8072; }
+    .vis-item.touringcar { background-color: #B4EEB4; }
+    .vis-item.endurance  { background-color: #FFFFCC; }
+	
+	 .progress-wrapper {
+      background: white;
+      width: 100%;
+      height: 18px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 60%;
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      background: #63ed63;
+    }
+
+    .progress-label {
+      position: absolute;
+      z-index: 1;
+    }
+	
+  </style>
+  
+  <!-- Load jquery for ajax support -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  
+  <script src="./Timeline _ Editable Groups_files/vis.js.загружено"></script>
+  <link href="./Timeline _ Editable Groups_files/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+
+<body>
+<div id="loading">loading...</div>
+<div id="visualization"></div>
+<div id="myTimeline"></div>
+
+<!--   <textarea id="data">
+
+</textarea> 
+  
+  <div class="buttons">
+  <input type="button" id="load" value="&darr; Load" title="Load data from textarea into the Timeline">
+  <input type="button" id="save" value="&uarr; Save" title="Save data from the Timeline into the textarea">
+</div>
+ -->
+
+<script type="text/javascript">
+
+var container = document.getElementById('myTimeline');
+
+var items
+var groups
+ var timeline
+
+  // load data via an ajax request. When the data is in, load the timeline
+  $.ajax({
+    url: './Timeline _ Editable Groups_files/data.json',
+    success: function (data) {
+      // hide the "loading..." message
+      document.getElementById('loading').style.display = 'none';
+
+      // DOM element where the Timeline will be attached
+      var container = document.getElementById('visualization');
+
+	  data1 = JSON.parse(data)
+	  
+	  groups = data1.groups
+	  
+      // Create a DataSet (allows two way data-binding)
+       <!-- items = new vis.DataSet(data); -->
+	   
+	   items = data1.items
+	  
+	   
+
+      // Configuration for the Timeline
+	  var options = {
+    // option groupOrder can be a property name or a sort function
+    // the sort function must compare two groups and return a value
+    //     > 0 when a > b
+    //     < 0 when a < b
+    //       0 when a == b
+    groupOrder: function (a, b) {
+      return a.value - b.value;
+    },
+    groupOrderSwap: function (a, b, groups) {
+    	var v = a.value;
+    	a.value = b.value;
+    	b.value = v;
+    },
+    groupTemplate: function(group){
+      var container = document.createElement('div');
+      var label = document.createElement('span');
+      label.innerHTML = group.content + ' ';
+      container.insertAdjacentElement('afterBegin',label);
+      var hide = document.createElement('button');
+      hide.innerHTML = 'hide';
+      hide.style.fontSize = 'small';
+      hide.addEventListener('click',function(){
+        groups.update({id: group.id, visible: false});
+      });
+      container.insertAdjacentElement('beforeEnd',hide);
+      return container;
+    },
+	  visibleFrameTemplate: function(item) {
+      if (item.visibleFrameTemplate) {
+        return item.visibleFrameTemplate;
+      }
+      var percentage = Math.floor(Math.random(0,100)*100) + '%';
+      return '<div class="progress-wrapper"><div class="progress" style="width:' + percentage + '"></div><label class="progress-label">' + percentage + '<label></div>';
+    } ,
+    orientation: 'both',
+    editable: true,
+    groupEditable: true,
+    start: new Date(2014, 4, 1),
+    end: new Date(2015, 10, 1),
+<!-- 	 min: new Date(2012, 0, 1), -->                // lower limit of visible range
+  <!--  max: new Date(2013, 0, 1),  -->
+	zoomMin: 1000 * 60 * 40 * 1,
+	zoomMax: 1000 * 60 * 60 * 24 * 31 * 3,     // about three months in milliseconds
+  
+  };
+  
+  
+
+      // Create a Timeline
+       timeline = new vis.Timeline(container, items, options);
+	  
+	    timeline.setOptions(options);
+		
+		
+		
+  timeline.setGroups(groups);
+
+	  
+	  timeline.on('rangechange', function (properties) {
+      logEvent('rangechange', properties);
+    });
+
+    timeline.on('rangechanged', function (properties) {
+      logEvent('rangechanged', properties);
+    });
+
+    timeline.on('select', function (properties) {
+      logEvent('select', properties);
+    });
+
+    timeline.on('itemover', function (properties) {
+      logEvent('itemover', properties);
+      setHoveredItem(properties.item);
+    });
+    
+    timeline.on('itemout', function (properties) {
+      logEvent('itemout', properties);
+      setHoveredItem('none');
+    });
+
+    timeline.on('click', function (properties) {
+      logEvent('click', properties);
+    });
+
+    timeline.on('doubleClick', function (properties) {
+      logEvent('doubleClick', properties);
+    });
+
+    timeline.on('contextmenu', function (properties) {
+      logEvent('contextmenu', properties);
+    });
+
+    timeline.on('mouseDown', function (properties) {
+        logEvent('mouseDown', properties);
+    });
+
+    timeline.on('mouseUp', function (properties) {
+        logEvent('mouseUp', properties);
+    });
+
+    // other possible events:
+
+    // timeline.on('mouseOver', function (properties) {
+    //   logEvent('mouseOver', properties);
+    // });
+
+    // timeline.on("mouseMove", function(properties) {
+    //   logEvent('mouseMove', properties);
+    // });
+
+    items.on('*', function (event, properties) {
+      logEvent(event, properties);
+    });
+	  
+    },
+    error: function (err) {
+      console.log('Error', err);
+      if (err.status === 0) {
+        alert('Failed to load data/basic.json.\nPlease run this example on a server.');
+      }
+      else {
+        alert('Failed to load data/basic.json.');
+      }
+    }
+  });
+  
+  function fn1() {
+    timeline.setWindow('2014-01-01', '2014-04-01');
+  };
+  
+  function fn2() {
+    timeline.setWindow('2014-01-01', '2014-04-01', {animation: false});
+  };
+  
+  function fn3() {
+    timeline.fit();
+  };
+  
+  function fn4() {
+    timeline.setSelection([5, 6], {
+      focus: true
+    });
+  };
+  
+  function fn5() {
+    timeline.focus(2);
+  };
+  
+  function fn6() {
+    timeline.focus([5, 6], {animation: {duration: 3000, easingFunction: 'linear'}}); // ms
+  };
+  
+  function fn7() {
+    var selection = timeline.getSelection();
+    timeline.focus(selection);
+  };
+ function fn8() {
+    timeline.moveTo('2014-02-01');
+	};
+
+
+    
+
+    function stringifyObject (object) {
+      if (!object) return;
+      var replacer = function(key, value) {
+        if (value && value.tagName) {
+          return "DOM Element";
+        } else {
+          return value;
+        }
+      }
+      return JSON.stringify(object, replacer)
+    }
+
+    function logEvent(event, properties) {
+
+	  window.postComMessage('event=' + JSON.stringify(event) + ', ' +
+          'properties=' + stringifyObject(properties))
+		  
+
+	  
+    }
+
+    function setHoveredItem(id) {
+      var hoveredItem = document.getElementById('hoveredItem');
+     
+    }
+	
+	function aa() {
+	
+	console.log('s');
+	
+	return 1;
+	
+	}
+	
+	
+	
+  var txtData = document.getElementById('data');
+  var btnLoad = document.getElementById('load');
+  var btnSave = document.getElementById('save');
+
+
+  function loadData () {
+    // get and deserialize the data
+    var data = JSON.parse(txtData.value);
+
+    // update the data in the DataSet
+    //
+    // Note: when retrieving updated data from a server instead of a complete
+    // new set of data, one can simply update the existing data like:
+    //
+    //   items.update(data);
+    //
+    // Existing items will then be updated, and new items will be added.
+    items.clear();
+    items.add(data);
+
+    // adjust the timeline window such that we see the loaded data
+    timeline.fit();
+  }
+<!--   btnLoad.onclick = loadData; -->
+
+  function saveData() {
+    // get the data from the DataSet
+    //
+    // Note that we specify the output type of the fields start and end
+    // as "ISODate", which is safely serializable. Other serializable types
+    // are "Number" (unix timestamp), "ASPDate" or "String" (without timezone!).
+    //
+    // Alternatively, it is possible to configure the DataSet to convert
+    // the output automatically to ISODates like:
+    //
+    //   var options = {
+    //     type: {start: 'ISODate', end: 'ISODate'}
+    //   };
+    //   var items = new vis.DataSet(options);
+    //   // now items.get() will automatically convert start and end to ISO dates.
+    //
+    var data = groups.get({
+      type: {
+        start: 'ISODate',
+        end: 'ISODate'
+      }
+    });
+
+    // serialize the data and put it in the textarea
+    txtData.value = JSON.stringify(data, null, 2);
+	
+	return txtData.value  
+	
+  }
+ <!--  btnSave.onclick = saveData;
+ -->
+  // load the initial data
+  <!-- loadData(); -->
+  
+  
+
+  
+
+
+  
+</script>
+<!--   <input id='txt1' value='Type Something'/><button id='btn1'>Click ME</button> -->
+
+</body></html>

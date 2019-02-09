@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+
+        body, html {
+            font-family: arial, sans-serif;
+            font-size: 11pt;
+        }
+
+        #visualization {
+            box-sizing: border-box;
+            width: 100%;
+            height: 300px;
+        }
+
+        .vis-item.openwheel {
+            background-color: #B0E2FF;
+        }
+
+        .vis-item.rally {
+            background-color: #EAEAEA;
+        }
+
+        .vis-item.motorcycle {
+            background-color: #FA8072;
+        }
+
+        .vis-item.touringcar {
+            background-color: #B4EEB4;
+        }
+
+        .vis-item.endurance {
+            background-color: #FFFFCC;
+        }
+
+        .progress-wrapper {
+            background: white;
+            width: 100%;
+            height: 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 60%;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            background: #63ed63;
+        }
+
+        .progress-label {
+            position: absolute;
+            z-index: 1;
+        }
+    </style>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="./Timeline _ Editable Groups_files/vis.js.загружено"></script>
+
+    <link href="./Timeline _ Editable Groups_files/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+    <body>
+        <div id="loading">loading...</div>
+        <div id="visualization"></div>
+
+        <script type="text/javascript">
+
+            var items
+            var groups
+            var timeline
+            var container
+
+            var editable
+
+            editable = false
+
+            container = document.getElementById('visualization');
+            timeline = new vis.Timeline(container, [], {});
+
+            function update() {
+
+                //document.getElementById('loading').style.display = "";
+
+                //document.getElementById('visualization').style.display = 'none';
+
+                if (editable == '1') {
+                    editable = true
+                }
+
+                $.ajax({
+                    url: 'http://' + window.external_log_record + '/get?d_ref=' + window.d_ref + '&date=' + window.date,
+
+                    success: function (data) {
+                        document.getElementById('loading').style.display = 'none';
+                        data_json = JSON.parse(data)
+
+                        groups = data_json.groups
+                        items = data_json.items
+
+                        var options = {
+                            orientation: 'top',
+                            editable: editable,
+                            groupEditable: false,
+                            start: window.date.toDateFromDatetime(),
+                            end: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                            min: window.date.toDateFromDatetime(),
+                            max: window.date.toDateFromDatetime().setMilliseconds(23 * 60 * 60 * 1000),
+                            zoomMin: 1000 * 60 * 60 * 4,
+                            zoomMax: 1000 * 60 * 60 * 24 * 31 * 1,
+                            type: 'range',
+                            multiselect: true,
+                            hiddenDates: [{ start: '2018-01-01 22:00:00', end: '2018-01-02 06:00:00', repeat: 'daily' }],
+                            margin: { item: 1, axis: 1 },
+                            //timeAxis: {scale: 'minute', step: 20},
+                        };
+
+                        timeline.setItems(items);
+                        timeline.setOptions(options);
+                        timeline.setGroups(groups);
+
+                        timeline.on('rangechange', function (properties) {
+                            //logEvent('rangechange', properties);
+                        });
+
+                        timeline.on('rangechanged', function (properties) {
+                            //logEvent('rangechanged', properties);
+                        });
+
+                        timeline.on('select', function (properties) {
+                            //logEvent('select', properties);
+                        });
+
+                        timeline.on('itemover', function (properties) {
+                            //logEvent('itemover', properties);
+                        });
+
+                        timeline.on('itemout', function (properties) {
+                            //logEvent('itemout', properties);
+                        });
+
+                        timeline.on('click', function (properties) {
+                            //logEvent('click', properties);
+                        });
+
+                        timeline.on('doubleClick', function (properties) {
+                            logEvent('doubleClick', properties);
+                        });
+
+                        timeline.on('contextmenu', function (properties) {
+                            //logEvent('contextmenu', properties);
+                        });
+
+                        timeline.on('mouseDown', function (properties) {
+                            //logEvent('mouseDown', properties);
+                        });
+
+                        timeline.on('mouseUp', function (properties) {
+                            //logEvent('mouseUp', properties);
+                        });
+
+                        //document.getElementById('visualization').style.display = "";
+
+                    },
+                    error: function (err) {
+                        console.log('Error', err);
+                        if (err.status === 0) {
+                            alert('Failed to load data/basic.json.\nPlease run this example on a server.');
+                        }
+                        else {
+                            alert('Failed to load data/basic.json.');
+                        }
+                    }
+                });
+            }
+
+            function fn1() {
+                timeline.setWindow('2014-01-01', '2014-04-01');
+            };
+
+            function fn2() {
+                timeline.setWindow('2014-01-01', '2014-04-01', { animation: false });
+            };
+
+            function fn3() {
+                timeline.fit();
+            };
+
+            function fn4() {
+                timeline.setSelection([5, 6], {
+                    focus: true
+                });
+            };
+
+
+            function fn5() {
+                timeline.focus(2);
+            };
+
+            function fn6() {
+                timeline.focus([5, 6], { animation: { duration: 3000, easingFunction: 'linear' } }); // ms
+            };
+
+            function fn7() {
+                var selection = timeline.getSelection();
+                timeline.focus(selection);
+            };
+            function fn8() {
+                timeline.moveTo('2014-02-01');
+            };
+
+
+            function stringifyObject(object) {
+                if (!object) return;
+                var replacer = function (key, value) {
+                    if (value && value.tagName) {
+                        return "DOM Element";
+                    } else {
+                        return value;
+                    }
+                }
+                return JSON.stringify(object, replacer)
+            }
+
+            function logEvent(event, properties) {
+
+                window.postComMessage('event=' + JSON.stringify(event) + ', ' +
+                    'properties=' + stringifyObject(properties))
+
+            }
+
+            /**
+             * Convert string datetime to Javascript Date object
+             * Eg. "2014-04-23 22:06:17".toDateFromDatetime()
+             01.01.0001 0:00:00
+            */
+            String.prototype.toDateFromDatetime = function () {
+                var parts = this.split(/[. :]/);
+                return new Date(parts[2], parts[1] - 1, parts[0], parts[3], parts[4], parts[5]);
+            };
+
+        </script>
+    </body>
+</html>
