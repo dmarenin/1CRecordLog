@@ -210,7 +210,7 @@
         setDefaultDate: false,
 
         // first day of week (0: Sunday, 1: Monday etc)
-        firstDay: 0,
+        firstDay: 1,
 
         // the default flag for moment's strict date parsing
         formatStrict: false,

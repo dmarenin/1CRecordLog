@@ -182,7 +182,7 @@ if (qs['readonly']) {window.readonly = qs['readonly']}
 
 function send_record()
 {
-    if (!selected_mp || !selected_mp[0]) { alert('Необходимо выбрать Мастера-приёмщика!'); return false; }
+    if (!selected_mp || !selected_mp[0]) { alert('Необходимо выбрать Менеджера!'); return false; }
     if (!selected_mp[0]['className'] || selected_mp[0]['className'] != 'expected') { alert('Для записи выбран не размеченный промежуток времени. Такого быть не должно.'); return false; }
     
     let newRecordInfo = {"begin":"", "end":"", "manager": {"ref":"", "name":""}, "equipment": []};
@@ -233,7 +233,7 @@ function update() {
     $("div.tl_msg").fadeIn("fast");
     console.log(window.external_log_record)
     $.ajax({
-        url: 'http://' + window.external_log_record + '/get?d_ref=' + window.d_ref + '&date=' + window.date + '&r_ref=' + window.r_ref + '&u_ref=' + window.u_ref,
+        url: 'http://' + window.external_log_record + '/get_sale?d_ref=' + window.d_ref + '&date=' + window.date + '&r_ref=' + window.r_ref + '&u_ref=' + window.u_ref,
 
         success: function (data) {
             
@@ -757,11 +757,11 @@ $(function() {
     // check master isset and expected className
     
 
-    if (!selected_mp || !selected_mp[0]) { alert('Необходимо выбрать Мастера-приёмщика!'); return false; }
+    if (!selected_mp || !selected_mp[0]) { alert('Необходимо выбрать Менеджера'); return false; }
     if (!selected_mp[0]['className'] || selected_mp[0]['className'] != 'expected') { alert('Для записи выбран не размеченный промежуток времени. Такого быть не должно.'); return false; }
 
-    $("div.tl_msg_overlay").show();
-    $("div.tl_msg").show();
+    //$("div.tl_msg_overlay").show();
+    //$("div.tl_msg").show();
 
     let newRecordInfo = {"begin":"", "end":"", "manager": {"ref":"", "name":""}, "equipment": []};
     // set master & time

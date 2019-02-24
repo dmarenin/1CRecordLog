@@ -364,6 +364,7 @@ class CharSettingRecordLog(OnesRef):
         db_table = 'ХарактеристикиНастройкиЖурналаЗаписи'
 
 class WorkshopEquipment(OnesRef):
+    value = ForeignKey(Cars, db_column='Значение', related_name='eq_value')
     class Meta:
         db_table = 'r_ОборудованиеЦеха'       
 
@@ -381,6 +382,7 @@ class EventKinds(OnesEnum):
         db_table = 'e_CRM_ТипСобытия'
 
 # region Документы
+
 class Event(OnesDoc):
     author = ForeignKey(User, db_column='Автор', related_name='events_author')
     manager = ForeignKey(User, db_column='Менеджер', related_name='events_manager')
@@ -415,7 +417,6 @@ class OrderOutfit(OnesDoc):
     class Meta:
         db_table = 'd_ЗаказНаряд'
 
-
 class RecordToLogRecord(OnesDoc):
     # buisnessProcessService = ForeignKey(CRM_BuisnessProcessService, db_column='БизнесПроцессСервис')
     dep = ForeignKey(Dep, db_column='ПодразделениеКомпании', related_name='records_to_log_record')
@@ -439,14 +440,12 @@ class RecordToLogRecord(OnesDoc):
     class Meta:
         db_table = 'd_ЗаписьВЖурналЗаписи'
 
-
 class RecordToLogRecord_Promises(OnesTable):
     promise = ForeignKey(CRM_Promises, db_column='Обещание')
     link = ForeignKey(RecordToLogRecord, db_column='Ссылка')
 
     class Meta:
         db_table = 'd_ЗаписьВЖурналЗаписи_Обещания'
-
 
 class RecordToLogRecord_Periods(OnesTable):
     ref = ForeignKey(RecordToLogRecord, db_column='Ссылка')
@@ -461,13 +460,11 @@ class RecordToLogRecord_Periods(OnesTable):
     class Meta:
         db_table = 'd_ЗаписьВЖурналЗаписи_ПериодыРемонта'
 
-
 class CertificatesOfControl(OnesDoc):
     car = ForeignKey(Cars, db_column='Автомобиль')
 
     class Meta:
         db_table = 'd_СертификатКонтроля'
-
 
 class CertificatesOfControl_Diagnostics(OnesTable):
     rec_critical = BoolField(db_column='НемедленноУстранить')
@@ -481,6 +478,19 @@ class CertificatesOfControl_Diagnostics(OnesTable):
     class Meta:
         db_table = 'd_СертификатКонтроля_Диагностика'
 
+class CRM_TestDrive(OnesDoc):
+    dep = ForeignKey(Dep, db_column='Подразделение', related_name='dep_TestDrive')
+    client = ForeignKey(ClientsCRM, db_column='Клиент')
+    car = ForeignKey(Cars, db_column='Автомобиль', related_name='car_TestDrive')
+    author = ForeignKey(User, db_column='Ответственный')
+    employee = ForeignKey(Employee, db_column='Менеджер')
+    reason = peewee.CharField(db_column='Комментарий', max_length=150)
+    close = BoolField(db_column='Завершен')
+    notCome = BoolField(db_column='НеСостоялся')   
+    periodEnd = DateField(db_column="ДатаОкончания")
+
+    class Meta:
+        db_table = 'd_CRM_ТестДрайв'
 
 # endregion
 
@@ -556,7 +566,7 @@ class CRM_BuisnessProcessService_PointRoute(OnesEnum):
 
         if var == "Выдача автомобиля":
             return "close"
-
+        pass
 
 # endregion
 
@@ -1415,6 +1425,9 @@ class SettingsRecordLog(OnesCore):
             SettingsRecordLog.val_char.alias('val_char'),
             SettingsRecordLog.period.alias('period'),
             SettingsRecordLog.reg,
+
+            SettingsRecordLog.periodStart.alias('periodStart'),
+            SettingsRecordLog.periodEnd.alias('periodEnd'),
 
             #peewee.fn.MAX(SettingsRecordLog.num_day).alias('num_day'),
             #peewee.fn.MAX(SettingsRecordLog.accept_proc).alias('accept_proc'),

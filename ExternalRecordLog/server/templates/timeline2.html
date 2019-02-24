@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <script src="./static/scripts/jquery.min.js"></script>
+    <script src="./static/scripts/vis.js"></script>
+    <script src="./static/scripts/interact.js"></script>
+    <script src="./static/scripts/tooltip.js" type="text/javascript"></script>
+    <script src="./static/scripts/moment.js"></script>
+    <script src="./static/scripts/pikaday.js"></script>
+
+    <link href="./static/css/timeline.css" rel="stylesheet" type="text/css">
+    <link href="./static/css/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css">
+    <link href="./static/css/tooltip.css" rel="stylesheet" type="text/css" />
+    <link href="./static/css/pikaday.css" rel="stylesheet" type="text/css">
+
+    <body oncontextmenu="return false;">
+        <body>
+            <div id="tl_active_buttons">
+                <span class="date_prev">Назад</span>
+                <input id="this_date" value="" />
+                <span class="date_next">Вперед</span>
+                <span class="refrash"><img style="position: relative;margin-bottom: -6px; height: 20px;" src="./static/content/refrash.png"></span>
+            </div>
+            
+            <div id="loading">loading...</div>
+            <div id="visualization"></div>
+            
+            <div class="resize-container" id="works-wrap" style="display:none;">
+              <div class="resize-drag">
+              
+                <div class='items-panel' id="works">
+                    <div class='side'>
+                        <div class='items-panel'>
+                            <div class='side'>
+                                <h3>Не распределенные работы:</h3>
+                                <ul class="items"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+              </div>
+            </div>
+            
+
+        <div class="tl_msg_overlay" style="display:none;"></div>
+        <div class="tl_msg" style="display:none;">
+          <!--div class="tl_msg_inner">Журнал на <span class="jrnl_date">???</span> загружается.<br /> Подождите...</div-->
+          <img src="./static/content/load.gif">
+        </div>
+        
+        <div class="tl_msg_overlay2" style="display:none;"></div>
+        <div class="tl_msg2" style="display:none;">
+          <div class="tl_msg2_inner">Загружаю...<br /> Подождите.</div>
+        </div>
+        
+        <div class="tl_record_buttonblock" style="display:none;"><span class="tl_record_button">Записать</span> <span class="tl_clearselected_button">Очистить выбранное</span></div>
+
+            <script src="./static/scripts/timeline.js" type="text/javascript"></script>
+            
+        </body>
+</html>

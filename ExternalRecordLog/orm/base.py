@@ -17,9 +17,11 @@ class LegacyDatabase(peewee_mssql.MssqlDatabase):
         try:
             return super().execute_sql(sql, params, require_commit)
         except peewee.ProgrammingError as e:
-            common.print_query((sql,params), True)
+            #print(sql)
+            print(e.args)
+            #common.print_query((sql,params), True)
             if len(e.args) > 1:
-                pass
+                print(e.args[1].decode('utf-8'))
             else:
                 raise e
 

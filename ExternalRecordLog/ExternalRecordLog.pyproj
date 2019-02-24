@@ -74,12 +74,14 @@
     <Content Include="server\static\scripts\jquery.min.js" />
     <Content Include="server\static\scripts\moment.js" />
     <Content Include="server\static\scripts\pikaday.js" />
+    <Content Include="server\static\scripts\timeline_sale.js" />
     <Content Include="server\static\scripts\timeline.js" />
     <Content Include="server\static\scripts\tooltip.js" />
     <Content Include="server\static\scripts\vis.js" />
     <Content Include="server\templates\index.html" />
+    <Content Include="server\templates\timeline_sale.html" />
+    <Content Include="server\templates\timeline2.html" />
     <Content Include="server\templates\timeline.html" />
-    <Content Include="server\templates\timeline1.html" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

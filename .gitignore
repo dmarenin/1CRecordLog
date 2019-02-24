@@ -6,3 +6,4 @@ ExternalRecordLog/server/conf.py
 etc/libs/WebKitXCEF3.ocx
 etc/libs/WebKitXCEF3.ocx_bak
 etc/old/requirements.txt
+IntegrationJLR/*

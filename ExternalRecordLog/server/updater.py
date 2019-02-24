@@ -11,7 +11,7 @@ import peewee
 from playhouse.shortcuts import case
 from datetime import timedelta
 import base64
-from server.conf import SQL_HOST, SQL_BASE, SQL_USER, SQL_PASS, SQL_BASE_EX_W_H_DEFAULT
+from server.conf import SQL_HOST, SQL_BASE, SQL_USER, SQL_PASS, SQL_BASE_EX_W_H_DEFAULT, SQL_HOST_EX_W_H_DEFAULT, SQL_USER_EX_W_H_DEFAULT, SQL_PASS_EX_W_H_DEFAULT, SQL_BASE_EX_W_H_DEFAULT
 
 PRODUCER = KafkaProducer(bootstrap_servers=['192.168.5.131:9092'])
 
@@ -36,30 +36,29 @@ def do_upd_loop(ind_upd_list):
     t_loop = 0.150
     for x in UPD_EVENT_LIST[ind_upd_list]:
         d_ref = x['d_ref']
-        date = x['date'] 
+        date = x['date']
+        type = x['type']
         
         UPD_EVENT_LIST[ind_upd_list].remove(x)
         
-        if CACHE.get(d_ref) is None:
-            continue
-        else:
-            CACHE[d_ref][date] = None 
+        if type == 0:
+            if CACHE.get(d_ref) is None:
+                continue
+            else:
+                CACHE[d_ref][date] = None 
             
-        if not UNDISTRIDUTED_WORKS.get(d_ref) is None:
-            UNDISTRIDUTED_WORKS[d_ref] = None
+            if not UNDISTRIDUTED_WORKS.get(d_ref) is None:
+                UNDISTRIDUTED_WORKS[d_ref] = None
 
-        try:
-            get(d_ref, date)
-        except:
-            continue
+            try:
+                get(d_ref, date)
+            except:
+                pass
             
-        d = {}
+        d = {'Действия':'External_Record_Log_Event', 'event_date':datetime.now(), 'Данные':{}}
                     
-        d['Действия'] = 'External_Record_Log_Event' 
-        d['Данные'] = {} 
         d['Данные']['d_ref'] = d_ref 
         d['Данные']['date'] = date
-        d['event_date'] = datetime.now()
 
         jdata = json.dumps(d, default=json_serial)
 
@@ -73,7 +72,7 @@ def do_upd_loop(ind_upd_list):
 
     time.sleep(t_loop)
 
-def add_to_upd_event_list(d_ref, date):
+def add_to_upd_event_list(d_ref, date, type):
     lens = []
     
     for i, val in enumerate(UPD_EVENT_LIST):
@@ -81,19 +80,46 @@ def add_to_upd_event_list(d_ref, date):
 
         min_list = min(lens)
 
-    UPD_EVENT_LIST[min_list[1]].append({ 'd_ref':d_ref, 'date':date })
+    UPD_EVENT_LIST[min_list[1]].append({'d_ref':d_ref, 'date':date, 'type':type})
 
 # endregion
 
-# region cache
+# region data
 
 def get(d_ref=None, date=None, r_ref=None, is_garant=None):
     if d_ref is None:
+        return []
+    
+    if date is None:
         return []
 
     if CACHE_DEP.get(d_ref) is None:
         time_begin = get_time_begin(d_ref)
         time_end = get_time_end(d_ref)
+
+        time_begin_posts = date.replace(hour=9, minute=0, second=0, microsecond=0) 
+        time_end_posts = date.replace(hour=20, minute=0, second=0, microsecond=0) 
+
+        time_posts_list = []
+
+        _time_posts_list = get_setting_record_log(d_ref, WORK_DEPARTMENT_CHAR)
+
+        if len(_time_posts_list) == 0:
+            for x in range(1, 7):
+                t_post = {}
+                t_post['num_day'] = x
+                t_post['periodStart'] = time_begin_posts
+                t_post['periodEnd'] = time_end_posts
+
+                time_posts_list.append(t_post)
+        else:
+            for x in _time_posts_list:
+                t_post = {}
+                t_post['num_day'] = x['num_day']
+                t_post['periodStart'] = x['periodStart']
+                t_post['periodEnd'] = x['periodEnd']
+
+                time_posts_list.append(t_post)
 
         list_time_reserved = get_setting_record_log(d_ref, TIME_RESERVED_CHAR)
             
@@ -111,13 +137,14 @@ def get(d_ref=None, date=None, r_ref=None, is_garant=None):
         else:   
             time_acceptions = get_time_acceptions(d_ref)
 
-        CACHE_DEP[d_ref] = {'time_end' : time_end, 'time_acceptions' : time_acceptions, 'time_begin' : time_begin, 'list_time_reserved' : list_time_reserved, 'work_time_posts':work_time_posts}
+        CACHE_DEP[d_ref] = {'time_end' : time_end, 'time_acceptions' : time_acceptions, 'time_begin' : time_begin, 'list_time_reserved' : list_time_reserved, 'work_time_posts':work_time_posts, 'time_posts_list':time_posts_list}
 
     time_acceptions = CACHE_DEP.get(d_ref)['time_acceptions']        
     time_begin = CACHE_DEP.get(d_ref)['time_begin']      
     time_end = CACHE_DEP.get(d_ref)['time_end']
     list_time_reserved = CACHE_DEP.get(d_ref)['list_time_reserved']
     work_time_posts = CACHE_DEP.get(d_ref)['work_time_posts']
+    time_posts_list = CACHE_DEP.get(d_ref)['time_posts_list'] 
 
     if EMPL_DEV.get(d_ref) is None:
         EMPL_DEV[d_ref] = get_empl_dev(d_ref, date) 
@@ -144,28 +171,87 @@ def get(d_ref=None, date=None, r_ref=None, is_garant=None):
         res['time_acceptions'] = time_acceptions
         res['time_begin'] = time_begin
         res['time_end'] = time_end
-
-        #empl_dev = self.empl_dev.get(d_ref)
-
-        #dep_work_time = []
-        #if not self.work_time.get(d_ref) is None:
-        #    dep_work_time = self.work_time[d_ref][date]
-                        
-        #list_time_reserved = []
-        #if not self.cache_dep.get(d_ref) is None:
-        #    list_time_reserved = self.cache_dep.get(d_ref)['list_time_reserved']
-                        
-        #work_time_posts = []
-        #if not self.cache_dep.get(d_ref) is None:
-        #    work_time_posts = self.cache_dep.get(d_ref)['work_time_posts']
-                        
-        #res = res_to_vis_js(res, date, dep_work_time, list_time_reserved, r_ref, is_garant, empl_dev, work_time_posts, self.undistributed_works.get(d_ref))
+        res['time_posts_list'] = time_posts_list
 
         if not CACHE.get(d_ref) is None:
             CACHE[d_ref][date] = res 
             
     else:
         res = cache_dep.get(date)   
+
+    return res
+
+def get_test_drive(d_ref=None, date=None):
+    if d_ref is None:
+        return []
+    
+    if date is None:
+        return []
+
+    if CACHE_DEP.get(d_ref) is None:
+        time_begin = get_time_begin(d_ref)
+        time_end = get_time_end(d_ref)
+
+        time_begin_posts = date.replace(hour=9, minute=0, second=0, microsecond=0) 
+        time_end_posts = date.replace(hour=20, minute=0, second=0, microsecond=0) 
+
+        time_posts_list = []
+
+        _time_posts_list = get_setting_record_log(d_ref, WORK_DEPARTMENT_CHAR)
+
+        if len(_time_posts_list) == 0:
+            for x in range(1, 7):
+                t_post = {}
+                t_post['num_day'] = x
+                t_post['periodStart'] = time_begin_posts
+                t_post['periodEnd'] = time_end_posts
+
+                time_posts_list.append(t_post)
+        else:
+            for x in _time_posts_list:
+                t_post = {}
+                t_post['num_day'] = x['num_day']
+                t_post['periodStart'] = x['periodStart']
+                t_post['periodEnd'] = x['periodEnd']
+
+                time_posts_list.append(t_post)
+
+        work_time_posts = get_setting_record_log(d_ref, WORK_TIME_POSTS_CHAR)
+        
+        for p in work_time_posts:
+            post = orm.WorkshopEquipment.get(orm.WorkshopEquipment.ref == p['val_char'])
+
+            post_name = post.name
+    
+            p['post_name'] = post_name
+            p['car'] = post.Значение
+
+            if not post.Значение is None:        
+                car = orm.Cars.get(orm.Cars.ref == post.Значение)
+                p['car_name'] = car.name
+
+        CACHE_DEP[d_ref] = {'work_time_posts':work_time_posts, 'time_posts_list':time_posts_list}
+
+    if WORK_TIME.get(d_ref) is None:
+        WORK_TIME[d_ref] = {}
+
+    if not date is None:
+        dep_work_time = WORK_TIME[d_ref]
+        
+    if dep_work_time.get(date) is None:
+        dep_work_time = get_dep_work_time(d_ref, date)
+
+        WORK_TIME[d_ref].update({date : dep_work_time})
+
+    res = get_data_test_drive(d_ref, date)
+    
+    work_time_posts = CACHE_DEP.get(d_ref)['work_time_posts']
+    time_posts_list = CACHE_DEP.get(d_ref)['time_posts_list']
+
+    res['work_time_posts'] = work_time_posts
+    res['time_begin'] = TIME_BEGIN
+    res['time_end'] = TIME_END
+    res['time_posts_list'] = time_posts_list
 
     return res
 
@@ -270,7 +356,139 @@ def get_empl_dev(d_ref, date):
 
     return list(res)
 
+def get_data_test_drive(d_ref, date):
+    import decimal
+    dep = orm.Dep.get(orm.Dep.ref == d_ref)
+
+    #region empl
+
+    res = (orm.WorksheetKIA
+                .select(orm.Employee.ref.alias('m_ref'),
+                    orm.Employee.name.alias('m_name'),
+                    orm.Employee.phone.alias('m_phone'),
+                    orm.Employee.ref_ones.alias('m_ref_ones'),
+                    orm.Positions.name.alias('pos_name'),)       
+                .join(orm.Employee, on=((orm.WorksheetKIA.employee == orm.Employee.ref)))
+                .join(orm.JobMark, on=((orm.JobMark.ref == orm.WorksheetKIA.mark)))
+                .where(orm.WorksheetKIA.dep == d_ref)
+                .where(orm.WorksheetKIA.date == date)
+                .where(orm.JobMark.name << orm.JobMark.getJobMarkWorkTime())
+                .switch(orm.Employee)
+                .join(orm.Positions, on=((orm.Employee.position == orm.Positions.ref))))
+                
+                #.where(orm.Positions.name << POSITIONS_LIST)            
+                #.where(orm.Staff_Work_Schedule.dep == base64.b16decode(d_ref.encode()))
+
+    res_empl = list(res.dicts())
+
+    res = (orm.CRM_TestDrive
+                .select(orm.CRM_TestDrive.mark.alias('r_mark'),
+                    orm.CRM_TestDrive.posted.alias('r_post'),
+                    orm.CRM_TestDrive.ref.alias('r_ref'),
+                    orm.CRM_TestDrive.ref_ones.alias('r_ref_ones'),
+                    orm.CRM_TestDrive.client.alias('c_ref'),
+                    orm.CRM_TestDrive.notCome,
+                    orm.CRM_TestDrive.reason,
+                    orm.CRM_TestDrive.date.alias('r_begin'),
+                    orm.CRM_TestDrive.periodEnd.alias('r_end'),
+
+                    orm.Employee.ref.alias('m_ref'),
+                    orm.Employee.name.alias('m_name'),
+                    orm.Employee.phone.alias('m_phone'),
+                    orm.Employee.ref_ones.alias('m_ref_ones'),
+                    
+                    orm.Positions.name.alias('pos_name'),
+
+                    orm.ClientsCRM.name.alias('c_name'),
+                    orm.ClientsCRM.ref.alias('client_ref'),
+
+                    orm.Cars.name.alias('car_name'),
+                    orm.Cars.ref.alias('car_ref'),
+
+					orm.User.name.alias('user_name'),
+                    orm.User.ref.alias('user_ref'),)           
+                .join(orm.Employee, join_type=peewee.JOIN.LEFT_OUTER, on=((orm.Employee.ref == orm.CRM_TestDrive.employee)))
+                .join(orm.ClientsCRM, join_type=peewee.JOIN.LEFT_OUTER, on=((orm.ClientsCRM.ref == orm.CRM_TestDrive.client)))
+                .join(orm.Cars, join_type=peewee.JOIN.LEFT_OUTER, on=((orm.Cars.ref == orm.CRM_TestDrive.car)))
+                .join(orm.User, join_type=peewee.JOIN.LEFT_OUTER, on=((orm.User.ref == orm.CRM_TestDrive.author)))
+                .switch(orm.Employee)
+                .join(orm.Positions, join_type=peewee.JOIN.LEFT_OUTER, on=((orm.Employee.position == orm.Positions.ref)))
+                .where((orm.CRM_TestDrive.dep == d_ref) & (orm.CRM_TestDrive.date >= date) & (orm.CRM_TestDrive.date <= date + timedelta(days=1)) & (orm.CRM_TestDrive.mark == False)))   
+
+    data = {}
+    
+    data['date_upd'] = datetime.now()
+
+    data['empl'] = {}
+
+    list_res = list(res.dicts())
+
+    #for x in list_res:
+    #    if x['pos_name'] == POS_NAME_SM:
+    #        x['order1'] = 1000
+    
+    res_empl = sorted(res_empl, key=lambda e: e['m_name']) 
+    res_empl = sorted(res_empl, key=lambda e: e['pos_name'])   
+    #list_res = sorted(list_res, key=lambda e: e['order1'])
+
+    list_records = []
+
+    for x in res_empl:
+        empls = data['empl']
+        empl = empls.get(x['m_ref'])
+        if empl is None:
+            empl = {'m_ref' : x['m_ref'], 'm_name' : x['m_name'], 'm_phone' : x['m_phone'], 'm_ref_ones' : x['m_ref_ones'], 'periods':[], 'pos_name' : x['pos_name']}
+
+            empls[x['m_ref']] = empl
+    
+    for x in list_res:
+        empls = data['empl']
+        empl = empls.get(x['m_ref'])
+        if empl is None:
+            empl = {'m_ref' : x['m_ref'], 'm_name' : x['m_name'], 'm_phone' : x['m_phone'], 'm_ref_ones' : x['m_ref_ones'], 'periods':[], 'pos_name' : x['pos_name']}
+
+            empls[x['m_ref']] = empl
+
+        empl['periods'].append(x)
+        for i in  empl['periods']:
+            if not i['r_ref'] is None:
+                list_records.append(i['r_ref'])
+
+            if i.get('r_begin', 0).year > 4000:                
+                i['r_begin'] = i['r_begin'].replace(year = i['r_begin'].year - 2000)
+                i['r_end'] = i['r_end'].replace(year = i['r_end'].year - 2000)
+
+
+    ##endregion
+    
+    ##region posts
+
+    data['eqip'] = {}
+
+    #list_res = list(res.dicts())
+   
+    list_res = sorted(list_res, key=lambda e: e['car_name']) 
+
+    for x in list_res:
+        eqips = data['eqip']
+        equip = eqips.get(x['car_ref'])
+        if equip is None:
+            equip = {'eq_ref' : x['car_ref'], 'eq_name' : x['car_name'], 'periods':[]}
+
+            eqips[x['car_ref']] = equip
+
+        equip['periods'].append(x)
+        for i in  equip['periods']:
+            if i.get('r_begin', 0).year > 4000:                
+                i['r_begin'] = i['r_begin'].replace(year = i['r_begin'].year - 2000)
+                i['r_end'] = i['r_end'].replace(year = i['r_end'].year - 2000)
+
+    ##endregion
+
+    return data
+
 def get_data(d_ref, date, undistributed_works):
+    import decimal
     dep = orm.Dep.get(orm.Dep.ref == d_ref)
 
     #region empl
@@ -485,6 +703,8 @@ def get_data(d_ref, date, undistributed_works):
 
     res = (orm.RecordToLogRecord_Periods
                 .select(orm.RecordToLogRecord_Periods.key_periods_repair, 
+                        orm.RecordToLogRecord_Periods.periodStart, 
+                        orm.RecordToLogRecord_Periods.periodEnd, 
                         orm.RecordToLogRecord_Periods.num_str)
 
                 .where((orm.RecordToLogRecord_Periods.ref << list_records) & 
@@ -510,9 +730,11 @@ def get_data(d_ref, date, undistributed_works):
 
                 .join(orm.ServiceRecord_Services, on=(orm.ServiceRecord.ref == orm.ServiceRecord_Services.link))
                 .join(orm.Services, on=(orm.ServiceRecord_Services.service == orm.Services.ref))
-                .where((orm.ServiceRecord.recordLR << list_records) & 
-                       (orm.ServiceRecord.started == True) &
-                       (~(orm.ServiceRecord_Services.key_periods_repair << [item['key_periods_repair'] for item in list_keys_periods_repair]))))
+                #.where((orm.ServiceRecord.recordLR << list_records) & 
+                #       (orm.ServiceRecord.started == True) &
+                #       (~(orm.ServiceRecord_Services.key_periods_repair << [item['key_periods_repair'] for item in list_keys_periods_repair]))))
+                 .where((orm.ServiceRecord.recordLR << list_records) & 
+                       (orm.ServiceRecord.started == True)))
             
     res = res.dicts()
 
@@ -520,14 +742,35 @@ def get_data(d_ref, date, undistributed_works):
         undistributed_works[d_ref] = {}
 
     works = undistributed_works.get(d_ref)
-
+    
     for x in list(res):
         if works.get(x['recordLR']) is None:
             works[x['recordLR']] = []
         
         ref = works.get(x['recordLR'])
 
-        ref.append(x)
+        hours_total = 0
+        hours_plan = x['work_hour'] * x['amount']
+
+        if len(x['key_periods_repair']) != 0: 
+            for y in list_keys_periods_repair:
+                if x['key_periods_repair'] == y['key_periods_repair']:
+                    hours_total = hours_total + (decimal.Decimal)((y['periodEnd'] - y['periodStart']).seconds /3600)
+
+        #round(hours_total - hours_plan, 2) = 
+
+        if round(hours_plan - hours_total, 2) == (decimal.Decimal)(0):
+            continue
+
+        x['hours_total'] = hours_plan - hours_total
+
+        is_exist = False
+        for w in works[x['recordLR']]:
+            if w['hours_total'] == x['hours_total'] and w['key_periods_repair'] == x['key_periods_repair']:
+                is_exist = True
+
+        if not is_exist:
+            ref.append(x)
 
     #endregion
 
@@ -582,9 +825,9 @@ def get_mssql_conn(sql_base=''):
     #sql_pass = conn_string.sql_pass
     #sql_base_ex_w_h = conn_string.sql_base_ex_w_h
 
-    sql_host = SQL_HOST
-    sql_user = SQL_USER
-    sql_pass = SQL_PASS
+    sql_host = SQL_HOST_EX_W_H_DEFAULT
+    sql_user = SQL_USER_EX_W_H_DEFAULT
+    sql_pass = SQL_PASS_EX_W_H_DEFAULT
     sql_base = SQL_BASE_EX_W_H_DEFAULT
 
     conn = pymssql.connect(server=sql_host, user=sql_user, password=sql_pass, database=sql_base)  
@@ -603,3 +846,4 @@ def json_serial(obj):
     if isinstance(obj, decimal.Decimal):
        return float(obj)
     pass
+

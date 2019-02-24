@@ -4,7 +4,7 @@ from server import app, CACHE, CACHE_DEP, EMPL_DEV, WORK_TIME, UNDISTRIDUTED_WOR
 import server.updater as updater 
 from server.consts import *
 import json
-from server.res_to_vis_js import res_to_vis_js
+from server.res_to_vis_js import res_to_vis_js, res_to_vis_js_test_drive
 import orm.models as orm 
 
 @app.route('/')
@@ -16,11 +16,17 @@ def index():
 def timeline():
     return render_template('timeline.html')
 
-@app.route('/timeline1')
+@app.route('/timeline2')
 def timeline1():
-    return render_template('timeline1.html')
+    return render_template('timeline2.html')
 
-# region api route
+@app.route('/timeline_sale')
+def timeline_test_drive():
+    return render_template('timeline_sale.html')
+
+# region api
+
+# region service
 
 @app.route('/get')
 def get():
@@ -69,7 +75,7 @@ def upd():
     date = datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
     date = date.replace(hour=0, minute=0, second=0, microsecond=0) 
     
-    updater.add_to_upd_event_list(d_ref, date)
+    updater.add_to_upd_event_list(d_ref, date, 0)
     
     return S_OK, 200, HEADERS
    
@@ -104,7 +110,7 @@ def upd_from_order():
 
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)
             
-        updater.add_to_upd_event_list(d_ref, date)
+        updater.add_to_upd_event_list(d_ref, date, 0)
 
     return S_OK, 200, HEADERS
 
@@ -137,7 +143,7 @@ def upd_from_invoice():
                           
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)
             
-        updater.add_to_upd_event_list(d_ref, date)
+        updater.add_to_upd_event_list(d_ref, date, 0)
 
     return S_OK, 200, HEADERS
 
@@ -158,6 +164,46 @@ def upd_from_worksheet():
         CACHE_DEP[d_ref] = None
        
     return S_OK, 200, HEADERS
+
+# endregion
+
+# region sale
+
+@app.route('/get_sale')
+def get_sale():
+    d_ref = request.args.get('d_ref', '').upper() 
+    
+    r_ref = request.args.get('r_ref', '').upper()     
+    if len(r_ref) == 0:
+        r_ref = None
+
+    date = request.args.get('date', '').upper() 
+    date = datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
+    date = date.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    res = updater.get_test_drive(d_ref, date)
+
+    dep_work_time = WORK_TIME[d_ref][date]
+
+    res = res_to_vis_js_test_drive(res, date, r_ref, dep_work_time)
+
+    res = json.dumps(res, default=json_serial)
+ 
+    return res, 200, HEADERS
+
+@app.route('/upd_from_test_drive')
+def upd_from_test_drive():
+    d_ref = request.args.get('d_ref', '').upper() 
+    
+    date = request.args.get('date', '').upper() 
+    date = datetime.strptime(date, "%d.%m.%Y %H:%M:%S")
+    date = date.replace(hour=0, minute=0, second=0, microsecond=0) 
+    
+    updater.add_to_upd_event_list(d_ref, date, 1)
+    
+    return S_OK, 200, HEADERS
+    
+# endregion
 
 # endregion
 

@@ -7,6 +7,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "WSServer", "WSServer\WSServ
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ExternalRecordLog", "ExternalRecordLog\ExternalRecordLog.pyproj", "{81638705-BEF0-44E0-8534-E3BFC6748F81}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "IntegrationJLR", "IntegrationJLR\IntegrationJLR.pyproj", "{F2EBF56C-EECC-414D-9299-B02DB88C37C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,8 @@ Global
 		{1A663642-5FDA-40E4-B321-4D071BC04BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81638705-BEF0-44E0-8534-E3BFC6748F81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{81638705-BEF0-44E0-8534-E3BFC6748F81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2EBF56C-EECC-414D-9299-B02DB88C37C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2EBF56C-EECC-414D-9299-B02DB88C37C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

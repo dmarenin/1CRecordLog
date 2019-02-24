@@ -132,7 +132,7 @@
         }
 
         li.item:before {
-            content: "≣";
+            content: "🔧";
             font-family: Arial, sans-serif;
             display: inline-block;
             font-size: inherit;
@@ -155,7 +155,7 @@
         }
 
             li.object-item:before {
-                content: "≣";
+                content: "🔧";
                 font-family: Arial, sans-serif;
                 display: inline-block;
                 font-size: inherit;
