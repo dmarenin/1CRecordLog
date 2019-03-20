@@ -94,7 +94,7 @@ timeline.on('select', function (properties)
               // MP (only one)
               if (thisItem && thisItem['className'] && thisItem['className'] == 'expected' && !isEquipmentGroup(thisGroup))
               {
-                if (MPcount > 0)
+                if (MPcount > 0 || (MPcount == 0 && selected_equipment[0] && (selected_equipment[0]['start'] != thisItem['start'] || selected_equipment[0]['end'] != thisItem['end']) ))
                 {
                   delete all_selected_items[l];
                   //if (all_selected_items_ids[all_selected_items[l]]) { delete all_selected_items_ids[all_selected_items[l]]; }
@@ -110,8 +110,16 @@ timeline.on('select', function (properties)
               //else if (thisItem && thisItem['className'] && thisItem['className'] == 'not_is_guarantee')
               else if (thisGroup && isEquipmentGroup(thisGroup))
               {
-                // add to equipment data
-                selected_equipment.push(thisItem);
+                if (Equipcount > 0 || (Equipcount == 0 && selected_mp[0] && (selected_mp[0]['start'] != thisItem['start'] || selected_mp[0]['end'] != thisItem['end']) ))
+                {
+                  delete all_selected_items[l];
+                }
+                else
+                {
+                  // add to equipment data
+                  selected_equipment.push(thisItem);
+                }
+                Equipcount++;
               }
               else
               {

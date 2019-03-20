@@ -31,7 +31,9 @@ container = document.getElementById('visualization');
 timeline = new vis.Timeline(container, [], {});
 
 timeline.on('select', function (properties) 
-{
+{    
+    logEvent('select', properties);
+    
     if (window.editable != '1')
     {
         thisItem = timeline.itemsData._data[properties.items];

@@ -6,6 +6,7 @@ from server.consts import *
 import json
 from server.res_to_vis_js import res_to_vis_js, res_to_vis_js_test_drive
 import orm.models as orm 
+import peewee
 
 @app.route('/')
 @app.route('/index')
@@ -61,7 +62,12 @@ def get():
     if not UNDISTRIDUTED_WORKS.get(d_ref) is None:
         undistributed_works = UNDISTRIDUTED_WORKS.get(d_ref) 
     
-    res = res_to_vis_js(res, date, dep_work_time, list_time_reserved, r_ref, is_garant, empl_dev, work_time_posts, undistributed_works)
+    data_brigades = []
+
+    if d_ref == '9501D89D6773B96411E65D19B394CD2A':
+       data_brigades = updater.get_data_brigades()
+
+    res = res_to_vis_js(res, date, dep_work_time, list_time_reserved, r_ref, is_garant, empl_dev, work_time_posts, undistributed_works, data_brigades)
 
     res = json.dumps(res, default=json_serial)
  
@@ -92,14 +98,22 @@ def upd_from_order():
     res = (orm.RecordToLogRecord
            .select(orm.RecordToLogRecord.ref.alias('r_ref'),
                    orm.RecordToLogRecord.dep.alias('d_ref'),
-                   orm.RecordToLogRecord.ref_ones.alias('r_ref_ones'),      
+                   orm.RecordToLogRecord.ref_ones.alias('r_ref_ones'), 
+                   peewee.fn.CONCAT(orm.RecordToLogRecord.num_ext, '').alias('num_ext'),
+
                    orm.RecordToLogRecord.orderOutfit.alias('z_ref'),
                    orm.RecordToLogRecord.orderRepair.alias('q_ref'),
                    orm.RecordToLogRecord_Periods.periodStart.alias('r_begin'),
-                    orm.RecordToLogRecord_Periods.periodEnd.alias('r_end'),)
+                   orm.RecordToLogRecord_Periods.periodEnd.alias('r_end'),
+                   
+                   orm.OrderOutfit.posted.alias('z_posted'),
+                   orm.OrderRepair.posted.alias('o_posted'),
+                   
+                   )
            
            .join(orm.RecordToLogRecord_Periods, on=((orm.RecordToLogRecord_Periods.ref == orm.RecordToLogRecord.ref)))
-                
+           .join(orm.OrderOutfit, on=((orm.OrderOutfit.ref == orm.RecordToLogRecord.orderOutfit)))
+           .join(orm.OrderRepair, on=((orm.OrderRepair.ref == orm.RecordToLogRecord.orderRepair)))
            .where(orm.RecordToLogRecord.orderOutfit == r_ref))
 
     list_res = list(res.dicts())
@@ -111,6 +125,26 @@ def upd_from_order():
         date = date.replace(hour=0, minute=0, second=0, microsecond=0)
             
         updater.add_to_upd_event_list(d_ref, date, 0)
+
+        d = {'Действия':'Order_Event_Update', 'event_date':datetime.now(), 'Данные':{}}
+                    
+        d['Данные']['d_ref'] = d_ref 
+        d['Данные']['r_ref'] = x['r_ref']
+        d['Данные']['z_ref'] = x['z_ref']
+        d['Данные']['q_ref'] = x['q_ref']
+        d['Данные']['num_ext'] = x['num_ext']
+        d['Данные']['z_posted'] = x['z_posted']
+        d['Данные']['o_posted'] = x['o_posted']
+
+        jdata = json.dumps(d, default=json_serial)
+
+        key = d_ref.encode('utf-8')
+        value = jdata.encode('utf-8')
+                        
+        try:
+            updater.PRODUCER.send(f'upd_external_event_trigger_order', key=key, value=value)
+        except:
+            print(f"""send to kafka failed {jdata}""")
 
     return S_OK, 200, HEADERS
 
@@ -165,6 +199,14 @@ def upd_from_worksheet():
        
     return S_OK, 200, HEADERS
 
+@app.route('/upd_record_service')
+def upd_record_service():
+    r_ref = request.args.get('r_ref', '').upper() 
+    
+    updater.event_upd_record_service(r_ref)
+    
+    return S_OK, 200, HEADERS
+
 # endregion
 
 # region sale
@@ -202,7 +244,15 @@ def upd_from_test_drive():
     updater.add_to_upd_event_list(d_ref, date, 1)
     
     return S_OK, 200, HEADERS
+
+@app.route('/upd_record_test_drive')
+def upd_record_test_drive():
+    r_ref = request.args.get('r_ref', '').upper() 
     
+    updater.event_upd_record_test_drive(r_ref)
+    
+    return S_OK, 200, HEADERS  
+
 # endregion
 
 # endregion

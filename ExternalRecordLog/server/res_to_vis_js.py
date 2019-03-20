@@ -4,7 +4,7 @@ import uuid
 
 # region service
 
-def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garant, empl_dev, work_time_posts, undistributed_works):
+def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garant, empl_dev, work_time_posts, undistributed_works, data_brigades):
     _time_begin = '2018-01-01 time_begin:00'.replace('time_begin', data['time_end'])
     _time_end = '2018-01-02 time_end:00'.replace('time_end', data['time_begin'])
 
@@ -53,7 +53,7 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
 
         content = (empl['m_name'] + '<BR>' + str(empl['pos_name'])) + str_empl_dev,
 
-        d = {'content':str(content[0]), 'id':empl['m_ref'], 'value':val, 'className': className, 'style': style, 'order':order}
+        d = {'content':str(content[0]), 'id':empl['m_ref'], 'value':val, 'className': className, 'style': style, 'order':order, 'pos_name':empl['pos_name']}
 
         timeline['groups'].append(d)
 
@@ -176,11 +176,17 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
 
             d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : class_name, 'content' : str(y['c_name']), 'title': content, 'id': id_item}
 
+
             if not r_ref is None:
                 d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'unselected', 'content' : '', 'title': content, 'editable' : False, 'id': id_item}
                 
                 if r_ref == y['r_ref']:
-                    d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'select_ref', 'content' : str(y['c_name']),                'title': '', 'editable' : True, 'id': id_item}  
+                    editable = True
+
+                    if y['r_end']<datetime.now():
+                        editable = False
+
+                    d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'select_ref', 'content' : str(y['c_name']), 'title': '', 'editable' : editable, 'id': id_item}  
 
             timeline['items'].append(d)
 
@@ -224,6 +230,45 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
                    
                     timeline['items'].append(d5)
 
+
+    #endregion
+    
+    #region brigades
+
+    if len(data_brigades) > 0:
+        class_name = 'openwheel'
+
+        _empl_group = [item['id'] for item in timeline['groups']] 
+
+        cur = None
+         
+        for d_b in data_brigades:
+            if cur != d_b['brigade']:
+                if not cur is None:
+                    d = {'content':content, 'id':str(uuid.uuid1()),  'className': className, 'style': style, 'nestedGroups':eq, 'showNested': True, 'order':order}
+                    
+                    if len(eq) > 0:
+                        timeline['groups'].append(d)
+
+                order = order + 1
+                content = d_b['name'] + '<BR> <BR>'
+                eq = []
+
+                cur = d_b['brigade']
+
+                style = "color: white; background-color: #999999;"
+
+                if cur == '8C7E331427BBF57B4E0D9498E8E2E7FF':
+                    style = "color: white; background-color: #999999; border: 2px solid yellow;"
+
+
+            if d_b['master'] in _empl_group:
+                eq.append(d_b['master'])
+                
+            if d_b['expert'] in _empl_group:
+                eq.append(d_b['expert'])
+
+        pass
 
     #endregion
 
@@ -271,7 +316,7 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
 
         content = eqip['eq_name'] + '<BR>' + progres_style
 
-        d = {'content':str(content), 'id':eqip['eq_ref'], 'value':val, 'className': className, 'style': style, 'order':order}
+        d = {'content':str(content), 'id':eqip['eq_ref'], 'value':val, 'className': className, 'style': style, 'order':order, 'pos_name':'post'}
 
         timeline['groups'].append(d)
 
@@ -302,7 +347,12 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
                  'editable' : False, 'id': id_item}
                 
                 if r_ref == y['r_ref']:
-                    d = {'start' : start_item, 'end' : end_item, 'group' : e, 'className' : 'select_ref', 'content' : str(y['c_name']),                'title': '', 'editable' : True, 'id': id_item}  
+                    editable = True
+
+                    if y['r_end']<datetime.now():
+                        editable = False
+
+                    d = {'start' : start_item, 'end' : end_item, 'group' : e, 'className' : 'select_ref', 'content' : str(y['c_name']), 'title': '', 'editable' : editable, 'id': id_item}  
 
             timeline['items'].append(d)
 
@@ -398,7 +448,6 @@ def res_to_vis_js(data, date, dep_work_time, list_time_reserved, r_ref, is_garan
                     timeline['items'].append(d5)
 
             date_start = date_start + timedelta(minutes=p['val_int'])
-
 
     d = {'content':content, 'id':str(uuid.uuid1()),  'className': className, 'style': style, 'nestedGroups':eq, 'showNested': True, 'order':order}
         
@@ -540,7 +589,7 @@ def res_to_vis_js_test_drive(data, date, r_ref, dep_work_time):
 
         content = (empl['m_name'] + '<BR>' + str(empl['pos_name']))
 
-        d = {'content':str(content), 'id':empl['m_ref'], 'value':val, 'className': className, 'style': style, 'order':order}
+        d = {'content':str(content), 'id':empl['m_ref'], 'value':val, 'className': className, 'style': style, 'order':order, 'pos_name':empl['pos_name']}
 
         timeline['groups'].append(d)
 
@@ -672,7 +721,12 @@ def res_to_vis_js_test_drive(data, date, r_ref, dep_work_time):
                 d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'unselected', 'content' : '', 'title': content, 'editable' : False, 'id': id_item}
                 
                 if r_ref == y['r_ref']:
-                    d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'select_ref', 'content' : str(y['c_name']), 'title': '', 'editable' : True, 'id': id_item}  
+                    editable = True
+
+                    if y['r_end']<datetime.now():
+                        editable = False
+
+                    d = {'start' : start_item, 'end' : end_item, 'group' : x, 'className' : 'select_ref', 'content' : str(y['c_name']), 'title': '', 'editable' : editable, 'id': id_item}  
 
             timeline['items'].append(d)
 
@@ -784,7 +838,7 @@ def res_to_vis_js_test_drive(data, date, r_ref, dep_work_time):
 
         content = eqip['eq_name'] + '<BR>' + progres_style
 
-        d = {'content':str(content), 'id':eqip['eq_ref'], 'value':val, 'className': className, 'style': style, 'order':order}
+        d = {'content':str(content), 'id':eqip['eq_ref'], 'value':val, 'className': className, 'style': style, 'order':order, 'pos_name':'auto'}
 
         timeline['groups'].append(d)
 
@@ -838,7 +892,12 @@ def res_to_vis_js_test_drive(data, date, r_ref, dep_work_time):
                  'editable' : False, 'id': id_item}
                 
                 if r_ref == y['r_ref']:
-                    d = {'start' : start_item, 'end' : end_item, 'group' : e, 'className' : 'select_ref', 'content' : str(y['c_name']),                'title': '', 'editable' : True, 'id': id_item}  
+                    editable = True
+
+                    if y['r_end']<datetime.now():
+                        editable = False
+
+                    d = {'start' : start_item, 'end' : end_item, 'group' : e, 'className' : 'select_ref', 'content' : str(y['c_name']), 'title': '', 'editable' : editable, 'id': id_item}  
                     pass
 
             timeline['items'].append(d)

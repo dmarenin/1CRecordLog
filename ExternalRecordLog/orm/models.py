@@ -162,6 +162,21 @@ class KindsShedule(OnesEnum):
     def __str__(self):
         return self.name
 
+class Brigades(OnesEnum):
+    #name = ENameKey([
+    #    "Бригада1",
+    #    "Бригада2",
+    #    "Бригада3",
+    #    "Бригада4",
+    #    "Бригада5"
+
+    #])
+    name = peewee.CharField(db_column='ПредставлениеЗначения', max_length=32)
+
+    class Meta:
+        db_table = 'e_Бригады'
+
+
 # endregion
 
 
@@ -436,7 +451,9 @@ class RecordToLogRecord(OnesDoc):
     
     notCome = BoolField(db_column='НеПриехал')
     author = ForeignKey(User, db_column='Автор')
+    num_ext = peewee.CharField(db_column='НомерВнеш', max_length=10)
     
+
     class Meta:
         db_table = 'd_ЗаписьВЖурналЗаписи'
 
@@ -488,6 +505,7 @@ class CRM_TestDrive(OnesDoc):
     close = BoolField(db_column='Завершен')
     notCome = BoolField(db_column='НеСостоялся')   
     periodEnd = DateField(db_column="ДатаОкончания")
+    num_ext = peewee.CharField(db_column='НомерВнеш', max_length=10)
 
     class Meta:
         db_table = 'd_CRM_ТестДрайв'
@@ -1462,6 +1480,14 @@ class SettingsRecordLog(OnesCore):
            res1 = res1.where((SettingsRecordLog.char == kwargs.get('char')))
 
         return res1
+
+class DataBrigade(OnesCore):
+    expert = ForeignKey(Employee, db_column='Эксперт', related_name='data_expert')
+    master = ForeignKey(Employee, db_column='Мастер', related_name='data_master')
+    brigade = ForeignKey(Brigades, db_column='Бригада', related_name='data_brigade')
+
+    class Meta:
+        db_table = 's_ДанныеПоБригадам'
 
 # endregion
 

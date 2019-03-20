@@ -257,6 +257,69 @@ def get_test_drive(d_ref=None, date=None):
 
 # endregion
 
+# region event_upd_records
+
+def event_upd_record_service(r_ref):
+    r = (orm.RecordToLogRecord
+                .select(
+                    orm.RecordToLogRecord.mark.alias('mark'),
+                    orm.RecordToLogRecord.posted.alias('post'),
+                    orm.RecordToLogRecord.ref.alias('ref'),
+                    orm.RecordToLogRecord.ref_ones.alias('ref_ones'),
+                    orm.RecordToLogRecord.notCome,
+                    orm.RecordToLogRecord.num_ext,
+                    orm.RecordToLogRecord.dep,)
+                .where(orm.RecordToLogRecord.ref == r_ref))   
+                
+    res = list(r.dicts())
+    if len(res) == 0:
+        return
+
+    res = res[0]
+
+    jdata = json.dumps(res, default=json_serial)
+
+    key = res['dep'].encode('utf-8')
+    value = jdata.encode('utf-8')
+                        
+    try:
+        PRODUCER.send(f'event_upd_record_service', key=key, value=value)
+    except:
+        print(f"""send to kafka failed {jdata}""")
+
+    pass
+
+def event_upd_record_test_drive(r_ref):
+    r = (orm.CRM_TestDrive
+                .select(orm.CRM_TestDrive.mark.alias('mark'),
+                    orm.CRM_TestDrive.posted.alias('post'),
+                    orm.CRM_TestDrive.ref.alias('ref'),
+                    orm.CRM_TestDrive.ref_ones.alias('ref_ones'),
+                    orm.CRM_TestDrive.notCome,
+                    orm.CRM_TestDrive.num_ext,
+                    orm.CRM_TestDrive.dep,)           
+                .where(orm.CRM_TestDrive.ref == r_ref))   
+
+    res = list(r.dicts())
+    if len(res) == 0:
+        return
+
+    res = res[0]
+
+    jdata = json.dumps(res, default=json_serial)
+
+    key = res['dep'].encode('utf-8')
+    value = jdata.encode('utf-8')
+                        
+    try:
+        PRODUCER.send(f'event_upd_record_test_drive', key=key, value=value)
+    except:
+        print(f"""send to kafka failed {jdata}""")
+
+    pass
+
+# endregion
+
 # region sql query
 
 def get_setting_record_log(d_ref, char=None):
@@ -834,6 +897,18 @@ def get_mssql_conn(sql_base=''):
     cursor = conn.cursor()  
 
     return cursor
+
+def get_data_brigades():
+    res = (orm.DataBrigade
+                .select(orm.DataBrigade.expert, orm.DataBrigade.master, orm.DataBrigade.brigade, orm.Brigades.name)
+                .join(orm.Brigades, on=(orm.Brigades.ref == orm.DataBrigade.brigade)))
+
+
+    res = list(res.dicts())
+
+    res = sorted(res, key=lambda e: e['name']) 
+
+    return res
 
 # endregion
 

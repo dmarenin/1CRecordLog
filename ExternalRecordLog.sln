@@ -9,6 +9,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "ExternalRecordLog", "Extern
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "IntegrationJLR", "IntegrationJLR\IntegrationJLR.pyproj", "{F2EBF56C-EECC-414D-9299-B02DB88C37C4}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "API", "API\API.pyproj", "{E6054534-20A5-4D71-B551-9D5D800B50FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,8 @@ Global
 		{81638705-BEF0-44E0-8534-E3BFC6748F81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2EBF56C-EECC-414D-9299-B02DB88C37C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F2EBF56C-EECC-414D-9299-B02DB88C37C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6054534-20A5-4D71-B551-9D5D800B50FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6054534-20A5-4D71-B551-9D5D800B50FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
